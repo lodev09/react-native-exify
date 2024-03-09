@@ -1,7 +1,7 @@
 {
   "name": "react-native-exify",
   "version": "0.1.0",
-  "description": "Read and write exif data into an image",
+  "description": "Read and write exif data into an image.",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
   "types": "lib/typescript/src/index.d.ts",
@@ -26,15 +26,20 @@
     "!**/.*"
   ],
   "scripts": {
-    "example": "yarn workspace react-native-exify-example",
+    "example": "yarn workspace exify-example",
     "test": "jest",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint \"**/*.{js,ts,tsx}\"",
-    "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
+    "lint": "eslint --fix \"**/*.{js,ts,tsx}\"",
+    "format": "prettier --write \"**/*.{js,ts,tsx}\"",
+    "tidy": "yarn typecheck && yarn lint && yarn format",
+    "clean": "del-cli android/build lib && yarn workspace exify-example clean",
     "prepare": "bob build",
     "release": "release-it"
   },
   "keywords": [
+    "exif",
+    "exif-gps",
+    "image-exif",
     "react-native",
     "ios",
     "android"
@@ -132,10 +137,6 @@
       ]
     }
   },
-  "eslintIgnore": [
-    "node_modules/",
-    "lib/"
-  ],
   "prettier": {
     "quoteProps": "consistent",
     "singleQuote": true,
