@@ -1,17 +1,17 @@
-# react-native-exify
+# @lodev09/react-native-exify
 
 Read and write exif data into an image
 
 ## Installation
 
 ```sh
-npm install react-native-exify
+yarn install @lodev09/react-native-exify
 ```
 
 ## Usage
 
 ```js
-import { multiply } from 'react-native-exify';
+import { multiply } from '@lodev09/react-native-exify';
 
 // ...
 

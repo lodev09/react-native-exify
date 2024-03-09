@@ -5,7 +5,7 @@ import type { Position } from './types'
  */
 export const mockPosition = (
   center: Position = [-105.358887, 39.113014],
-  radiusKm = 10
+  radiusKm = 10,
 ): Position => {
   const centerLng = center[0]
   const centerLat = center[1]

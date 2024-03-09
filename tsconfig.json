@@ -2,7 +2,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "paths": {
-      "react-native-exify": ["./src/index"]
+      "@lodev09/react-native-exify": ["./src/index"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

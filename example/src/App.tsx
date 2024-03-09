@@ -21,7 +21,7 @@ import {
 import { isDevice } from 'expo-device'
 import { ResizeMode, Video } from 'expo-av'
 import { getThumbnailAsync } from 'expo-video-thumbnails'
-import { multiply } from 'react-native-exify'
+import { multiply } from '@lodev09/react-native-exify'
 
 import { delay, mockPosition } from './utils'
 
