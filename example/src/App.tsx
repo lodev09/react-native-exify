@@ -155,6 +155,8 @@ const App = () => {
     borderRadius: isRecording ? BORDER_RADIUS : CAPTURE_BUTTON_SIZE / 2,
   }
 
+  const $flashStyles: StyleProp<ViewStyle> = [$flashControls, { opacity: isRecording ? 0 : 1 }]
+
   useEffect(() => {
     ;(async () => {
       await requestCameraPermission()
@@ -203,7 +205,7 @@ const App = () => {
         >
           <View style={$controlsContainer}>
             <TouchableOpacity
-              style={[$flashControls, { opacity: isRecording ? 0 : 1 }]}
+              style={$flashStyles}
               activeOpacity={0.6}
               onPress={() => setFlashMode(flashMode === 'on' ? 'off' : 'on')}
             >
