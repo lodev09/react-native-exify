@@ -7486,12 +7486,7 @@ __metadata:
     "@types/react": ~18.2.45
     babel-plugin-module-resolver: ^5.0.0
     expo: ~50.0.11
-    expo-av: ~13.10.5
-    expo-camera: ~14.0.6
-    expo-device: ~5.9.3
-    expo-image: ~1.10.6
     expo-status-bar: ~1.11.1
-    expo-video-thumbnails: ~7.9.0
     prettier: ^3.2.5
     react: 18.2.0
     react-native: 0.73.4
@@ -7533,26 +7528,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-av@npm:~13.10.5":
-  version: 13.10.5
-  resolution: "expo-av@npm:13.10.5"
-  peerDependencies:
-    expo: "*"
-  checksum: ca3b11730a5eb117e2a81fed3b0a34ca290cc886a33515ea018872554ac6f05d509bad09af79fac8a892ab6a53a35757ed1280078207f92ecd795243fdee4379
-  languageName: node
-  linkType: hard
-
-"expo-camera@npm:~14.0.6":
-  version: 14.0.6
-  resolution: "expo-camera@npm:14.0.6"
-  dependencies:
-    invariant: ^2.2.4
-  peerDependencies:
-    expo: "*"
-  checksum: f4318f76d7b091fe5c3913839167bfd927e21cd91ae6a731ad52a77491e7050c7d5a4d4ec0f12f35db2696e4cb85d8145a112a6d0ac9adb89c46a940acaba768
-  languageName: node
-  linkType: hard
-
 "expo-constants@npm:~15.4.0":
   version: 15.4.5
   resolution: "expo-constants@npm:15.4.5"
@@ -7561,17 +7536,6 @@ __metadata:
   peerDependencies:
     expo: "*"
   checksum: 2141ae97a484827f13fdd34c3e39a2a7b9a4ffa10d14428f7b91b252ffab316c997bc40149bac11bc920559496fc2f28bdb3064a24974abb25f47deec76d5e6a
-  languageName: node
-  linkType: hard
-
-"expo-device@npm:~5.9.3":
-  version: 5.9.3
-  resolution: "expo-device@npm:5.9.3"
-  dependencies:
-    ua-parser-js: ^0.7.33
-  peerDependencies:
-    expo: "*"
-  checksum: 979e19e84ee14e0e25e35cdbb2a68256994d73bbf872d14c26fd1a71a2270a5526c51a74aacac4f8b4982c1b78ca49a002e83e32ab40eec5f5896a81c9095050
   languageName: node
   linkType: hard
 
@@ -7592,17 +7556,6 @@ __metadata:
   peerDependencies:
     expo: "*"
   checksum: fdcae7709a2bb9d9893af9467bc0bb9dd903d5340a5764ab07118323d5a86cfa19c2d2867f0ab3098bc2f62f2c3e94fa1fe492d82eed7acd785fb4b3bba215ba
-  languageName: node
-  linkType: hard
-
-"expo-image@npm:~1.10.6":
-  version: 1.10.6
-  resolution: "expo-image@npm:1.10.6"
-  dependencies:
-    "@react-native/assets-registry": ~0.73.1
-  peerDependencies:
-    expo: "*"
-  checksum: c847caf52e507d75a8d66a2f1f56d0c05669fe565510a9c24e4a5644e521a638e7171cfa67a4af89cc2db20f6d6a9cb25ee75471a9b2a4e167b91eb48d8eed35
   languageName: node
   linkType: hard
 
@@ -7644,15 +7597,6 @@ __metadata:
   version: 1.11.1
   resolution: "expo-status-bar@npm:1.11.1"
   checksum: 5ac4d6b592acff4c8d5da2cbe1eb337b9389b648e4e4c56af4c484b5f1fa0dddf09f5b7c86b34fb03d0a77d4a6658e370cfd57904587794fa14b7e06cae41e88
-  languageName: node
-  linkType: hard
-
-"expo-video-thumbnails@npm:~7.9.0":
-  version: 7.9.0
-  resolution: "expo-video-thumbnails@npm:7.9.0"
-  peerDependencies:
-    expo: "*"
-  checksum: f782b8506d504d591a38c637884cdcd043b7b6353cfc563d375a8cea17dbb620ce6ffda56fb1c9f2f5b313c423a2dab5207cfa75c18731424b8c0b7569740136
   languageName: node
   linkType: hard
 
@@ -15033,13 +14977,6 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: f61375590b3162599f0f0d5b8737877ac0a7bc52761dbb585d67e7b8753a3a4c42d9a554c4cc929f591ffcf3a2b0602f65ae3ce74714fd5652623a816862b610
-  languageName: node
-  linkType: hard
-
-"ua-parser-js@npm:^0.7.33":
-  version: 0.7.37
-  resolution: "ua-parser-js@npm:0.7.37"
-  checksum: 9e91a66171aa16c74680cfac84af6ed7ecdeb508ff7c90a55222f56c63172da2d98d2478763e9469c940415fe29c45a56ae51fec1c19a498e7a3b293f7b3b874
   languageName: node
   linkType: hard
 
