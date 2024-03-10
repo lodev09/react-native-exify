@@ -14,9 +14,11 @@
   },
   "dependencies": {
     "expo": "~50.0.11",
+    "expo-media-library": "~15.9.1",
     "expo-status-bar": "~1.11.1",
     "react": "18.2.0",
-    "react-native": "0.73.4"
+    "react-native": "0.73.4",
+    "react-native-vision-camera": "^3.9.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
