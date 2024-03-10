@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "expo": "~50.0.11",
+    "expo-image": "~1.10.6",
     "expo-media-library": "~15.9.1",
     "expo-status-bar": "~1.11.1",
     "react": "18.2.0",

@@ -7486,6 +7486,7 @@ __metadata:
     "@types/react": ~18.2.45
     babel-plugin-module-resolver: ^5.0.0
     expo: ~50.0.11
+    expo-image: ~1.10.6
     expo-media-library: ~15.9.1
     expo-status-bar: ~1.11.1
     prettier: ^3.2.5
@@ -7558,6 +7559,17 @@ __metadata:
   peerDependencies:
     expo: "*"
   checksum: fdcae7709a2bb9d9893af9467bc0bb9dd903d5340a5764ab07118323d5a86cfa19c2d2867f0ab3098bc2f62f2c3e94fa1fe492d82eed7acd785fb4b3bba215ba
+  languageName: node
+  linkType: hard
+
+"expo-image@npm:~1.10.6":
+  version: 1.10.6
+  resolution: "expo-image@npm:1.10.6"
+  dependencies:
+    "@react-native/assets-registry": ~0.73.1
+  peerDependencies:
+    expo: "*"
+  checksum: c847caf52e507d75a8d66a2f1f56d0c05669fe565510a9c24e4a5644e521a638e7171cfa67a4af89cc2db20f6d6a9cb25ee75471a9b2a4e167b91eb48d8eed35
   languageName: node
   linkType: hard
 
