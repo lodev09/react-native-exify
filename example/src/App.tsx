@@ -1,9 +1,5 @@
 import React, { useEffect } from 'react'
-import {
-  TouchableOpacity,
-  View,
-  type ViewStyle,
-} from 'react-native'
+import { TouchableOpacity, View, type ViewStyle } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
 import { multiply } from '@lodev09/react-native-exify'
 
