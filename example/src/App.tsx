@@ -8,7 +8,7 @@ import {
   type ViewStyle,
 } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
-import { multiply } from '@lodev09/react-native-exify'
+import * as Exify from '@lodev09/react-native-exify'
 import {
   Camera,
   useCameraDevice,
@@ -16,6 +16,8 @@ import {
   useMicrophonePermission,
 } from 'react-native-vision-camera'
 import * as MediaLibrary from 'expo-media-library'
+
+import { mockPosition } from './utils'
 
 const SPACE = 16
 
@@ -34,13 +36,23 @@ const App = () => {
       const photo = await camera.current?.takePhoto()
       if (photo) {
         const photoUri = `file://${photo.path}`
-        const libraryPermission = await MediaLibrary.requestPermissionsAsync()
-        if (libraryPermission.granted) {
-          const asset = await MediaLibrary.createAssetAsync(photoUri)
-          console.log('ASSET URI:', asset.uri)
-        } else {
-          console.log('LOCAL URI:', photoUri)
-        }
+
+        const position = mockPosition()
+
+        const exif = await Exify.writeAsync(photoUri, {
+          GPSLatitude: position[1],
+          GPSLongitude: position[0],
+        })
+
+        console.log(exif)
+
+        // const libraryPermission = await MediaLibrary.requestPermissionsAsync()
+        // if (libraryPermission.granted) {
+        //   const asset = await MediaLibrary.createAssetAsync(photoUri)
+        //   console.log('ASSET URI:', asset.uri)
+        // } else {
+        //   console.log('LOCAL URI:', photoUri)
+        // }
       }
     } catch (e) {
       console.error(e)
@@ -52,9 +64,6 @@ const App = () => {
       await cameraPermission.requestPermission()
       await microphonePermission.requestPermission()
       await MediaLibrary.requestPermissionsAsync()
-
-      const result = await multiply(3, 7)
-      console.log(result)
     })()
   }, [])
 
@@ -69,7 +78,7 @@ const App = () => {
   return (
     <View style={$container}>
       <StatusBar style="light" />
-      <Camera photo ref={camera} style={StyleSheet.absoluteFill} device={device} isActive={true} />
+      <Camera photo ref={camera} style={StyleSheet.absoluteFill} device={device} isActive={false} />
       {cameraPermission.hasPermission ? (
         <View style={$controlsContainer}>
           <View style={$captureWrapper}>

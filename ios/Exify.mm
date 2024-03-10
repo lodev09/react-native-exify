@@ -2,7 +2,8 @@
 
 @interface RCT_EXTERN_MODULE(Exify, NSObject)
 
-RCT_EXTERN_METHOD(multiply:(float)a withB:(float)b
+RCT_EXTERN_METHOD(writeAsync:(NSString*)uri
+                 withExif:(NSDictionary*)exif
                  withResolver:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
 

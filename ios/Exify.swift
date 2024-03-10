@@ -1,8 +1,8 @@
 @objc(Exify)
 class Exify: NSObject {
 
-  @objc(multiply:withB:withResolver:withRejecter:)
-  func multiply(a: Float, b: Float, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
-    resolve(a*b)
+  @objc(writeAsync:withExif:withResolver:withRejecter:)
+  func writeAsync(uri: String, exif: Dictionary<String, Any>, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
+    resolve("Hello world!")
   }
 }
