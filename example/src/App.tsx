@@ -9,6 +9,7 @@ import {
 } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
 import * as Exify from '@lodev09/react-native-exify'
+import * as ImagePicker from 'expo-image-picker'
 import { Image, type ImageStyle } from 'expo-image'
 import {
   Camera,
@@ -18,7 +19,7 @@ import {
 } from 'react-native-vision-camera'
 import * as MediaLibrary from 'expo-media-library'
 
-import { mockPosition } from './utils'
+// import { mockPosition } from './utils'
 
 const SPACE = 16
 
@@ -36,30 +37,56 @@ const App = () => {
 
   const device = useCameraDevice('back')
 
+  const readExif = async (uri: string) => {
+    const exif = await Exify.readAsync(uri)
+    console.log(exif)
+  }
+
   const takePhoto = async () => {
     try {
       const photo = await camera.current?.takePhoto()
       if (photo) {
         const photoUri = `file://${photo.path}`
+        await readExif(photoUri)
 
-        const position = mockPosition()
-        console.log(position)
+        // const position = mockPosition()
+        // console.log(position)
 
         // const exif = await Exify.writeAsync(photoUri, {
         //   GPSLatitude: position[1],
         //   GPSLongitude: position[0],
         // })
 
-        const exif = await Exify.readAsync(photoUri)
-        console.log(exif)
-
         // const libraryPermission = await MediaLibrary.requestPermissionsAsync()
         // if (libraryPermission.granted) {
         //   const asset = await MediaLibrary.createAssetAsync(photoUri)
         //   console.log('ASSET URI:', asset.uri)
+        //   await readExif(asset.uri)
         // } else {
         //   console.log('LOCAL URI:', photoUri)
+        //   await readExif(photoUri)
         // }
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const openLibrary = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsMultipleSelection: true,
+        selectionLimit: 1,
+      })
+
+      if (!result.canceled) {
+        for (const asset of result.assets) {
+          if (asset.assetId) {
+            const assetInfo = await MediaLibrary.getAssetInfoAsync(asset.assetId)
+            await readExif(assetInfo.uri)
+          }
+        }
       }
     } catch (e) {
       console.error(e)
@@ -99,7 +126,9 @@ const App = () => {
       <Camera photo ref={camera} style={StyleSheet.absoluteFill} device={device} isActive />
       {cameraPermission.hasPermission ? (
         <View style={$controlsContainer}>
-          <Image source={{ uri: libraryUri }} style={$libraryImage} />
+          <TouchableOpacity activeOpacity={0.6} onPress={openLibrary} style={$library}>
+            <Image source={{ uri: libraryUri }} style={$image} />
+          </TouchableOpacity>
           <View style={$captureWrapper}>
             <TouchableOpacity activeOpacity={0.6} style={$captureButton} onPress={takePhoto} />
           </View>
@@ -127,7 +156,12 @@ const $controlsContainer: ViewStyle = {
   width: '100%',
 }
 
-const $libraryImage: ImageStyle = {
+const $image: ImageStyle = {
+  width: '100%',
+  height: '100%',
+}
+
+const $library: ImageStyle = {
   position: 'absolute',
   left: SPACE * 2,
   width: SPACE * 3,

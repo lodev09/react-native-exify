@@ -1,10 +1,11 @@
 {
   "expo": {
-    "name": "RNExifyExample",
-    "slug": "RNExifyExample",
+    "name": "ExifyExample",
+    "slug": "ExifyExample",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -13,14 +14,14 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.lodev09.rnexify"
+      "bundleIdentifier": "com.lodev09.exify"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.lodev09.rnexify"
+      "package": "com.lodev09.exify"
     },
     "web": {
       "favicon": "./assets/favicon.png"

@@ -24,7 +24,7 @@ const Exify = NativeModules.Exify
  * @param  {Exif}            exif the exif tags to be written
  * @return {Promise<Exif>}      the full exif tags of the image
  */
-export function writeAsync(uri: string, exif: Exif): Promise<Exif> {
+export function writeAsync(uri: string, exif: Exif): Promise<Exif | undefined> {
   return Exify.writeAsync(uri, exif)
 }
 
@@ -33,6 +33,6 @@ export function writeAsync(uri: string, exif: Exif): Promise<Exif> {
  * @param  {string}        uri the image uri to read
  * @return {Promise<Exif>}     the full exif tags of the image
  */
-export function readAsync(uri: string): Promise<Exif> {
+export function readAsync(uri: string): Promise<Exif | undefined> {
   return Exify.readAsync(uri)
 }
