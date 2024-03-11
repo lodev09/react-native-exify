@@ -19,7 +19,7 @@ import {
 } from 'react-native-vision-camera'
 import * as MediaLibrary from 'expo-media-library'
 
-// import { mockPosition } from './utils'
+import { json, mockPosition } from './utils'
 
 const SPACE = 16
 
@@ -39,7 +39,7 @@ const App = () => {
 
   const readExif = async (uri: string) => {
     const exif = await Exify.readAsync(uri)
-    console.log(exif)
+    console.log(json(exif))
   }
 
   const takePhoto = async () => {
@@ -47,25 +47,23 @@ const App = () => {
       const photo = await camera.current?.takePhoto()
       if (photo) {
         const photoUri = `file://${photo.path}`
-        await readExif(photoUri)
+        const position = mockPosition()
 
-        // const position = mockPosition()
-        // console.log(position)
+        const exif = await Exify.writeAsync(photoUri, {
+          GPSLatitude: position[1],
+          GPSLongitude: position[0],
+        })
 
-        // const exif = await Exify.writeAsync(photoUri, {
-        //   GPSLatitude: position[1],
-        //   GPSLongitude: position[0],
-        // })
+        console.log(json(exif))
 
-        // const libraryPermission = await MediaLibrary.requestPermissionsAsync()
-        // if (libraryPermission.granted) {
-        //   const asset = await MediaLibrary.createAssetAsync(photoUri)
-        //   console.log('ASSET URI:', asset.uri)
-        //   await readExif(asset.uri)
-        // } else {
-        //   console.log('LOCAL URI:', photoUri)
-        //   await readExif(photoUri)
-        // }
+        const libraryPermission = await MediaLibrary.requestPermissionsAsync()
+        if (libraryPermission.granted) {
+          const asset = await MediaLibrary.createAssetAsync(photoUri)
+          setLibraryUri(asset.uri)
+          console.log('Saved to Asset')
+        } else {
+          console.log('Saved to Local')
+        }
       }
     } catch (e) {
       console.error(e)
@@ -123,7 +121,7 @@ const App = () => {
   return (
     <View style={$container}>
       <StatusBar style="light" />
-      <Camera photo ref={camera} style={StyleSheet.absoluteFill} device={device} isActive />
+      <Camera photo ref={camera} style={StyleSheet.absoluteFill} device={device} isActive={false} />
       {cameraPermission.hasPermission ? (
         <View style={$controlsContainer}>
           <TouchableOpacity activeOpacity={0.6} onPress={openLibrary} style={$library}>
