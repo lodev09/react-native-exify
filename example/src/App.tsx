@@ -38,8 +38,23 @@ const App = () => {
   const device = useCameraDevice('back')
 
   const readExif = async (uri: string) => {
-    const exif = await Exify.readAsync(uri)
-    console.log(json(exif))
+    const result = await Exify.readAsync(uri)
+    console.log(json(result))
+  }
+
+  const writeExif = async (uri: string, exif?: Exify.Exif) => {
+    const position = mockPosition()
+
+    // Add additional exif e.g. GPS
+    const result = await Exify.writeAsync(uri, {
+      ...exif,
+      GPSLatitude: position[1],
+      GPSLongitude: position[0],
+      Orientation: -90,
+      UserComment: 'Exif updated via react-native-exify',
+    })
+
+    console.log(json(result))
   }
 
   const takePhoto = async () => {
@@ -47,14 +62,8 @@ const App = () => {
       const photo = await camera.current?.takePhoto()
       if (photo) {
         const photoUri = `file://${photo.path}`
-        const position = mockPosition()
 
-        const exif = await Exify.writeAsync(photoUri, {
-          GPSLatitude: position[1],
-          GPSLongitude: position[0],
-        })
-
-        console.log(json(exif))
+        await writeExif(photoUri)
 
         const libraryPermission = await MediaLibrary.requestPermissionsAsync()
         if (libraryPermission.granted) {
@@ -81,8 +90,11 @@ const App = () => {
       if (!result.canceled) {
         for (const asset of result.assets) {
           if (asset.assetId) {
+            // Get asset uri first to get full exif information
             const assetInfo = await MediaLibrary.getAssetInfoAsync(asset.assetId)
+
             await readExif(assetInfo.uri)
+            await writeExif(assetInfo.uri)
           }
         }
       }
@@ -121,7 +133,7 @@ const App = () => {
   return (
     <View style={$container}>
       <StatusBar style="light" />
-      <Camera photo ref={camera} style={StyleSheet.absoluteFill} device={device} isActive={false} />
+      <Camera photo ref={camera} style={StyleSheet.absoluteFill} device={device} isActive />
       {cameraPermission.hasPermission ? (
         <View style={$controlsContainer}>
           <TouchableOpacity activeOpacity={0.6} onPress={openLibrary} style={$library}>

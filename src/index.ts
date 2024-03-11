@@ -36,3 +36,5 @@ export function writeAsync(uri: string, exif: Exif): Promise<Exif | undefined> {
 export function readAsync(uri: string): Promise<Exif | undefined> {
   return Exify.readAsync(uri)
 }
+
+export * from './types'

@@ -4,11 +4,8 @@ import PhotosUI
 class Exify: NSObject {
 
   func readFromFile(uri: String, resolve: @escaping RCTPromiseResolveBlock) -> Void {
-    if let url = URL(string: uri), let ciImage = CIImage(contentsOf: url) {
-      resolve(ciImage.properties)
-    } else {
-      resolve(nil)
-    }
+    let metadata = getMetadata(from: URL(string: uri))
+    resolve(metadata)
   }
 
   func readFromAsset(uri: String, resolve: @escaping RCTPromiseResolveBlock) -> Void {
@@ -22,83 +19,72 @@ class Exify: NSObject {
     imageOptions.isNetworkAccessAllowed = true
 
     asset.requestContentEditingInput(with: imageOptions) { contentInput, info in
-      if let url = contentInput?.fullSizeImageURL, let ciImage = CIImage(contentsOf: url) {
-        resolve(ciImage.properties)
-      } else {
+      guard let url = contentInput?.fullSizeImageURL, let metadata = getMetadata(from: url) else {
         resolve(nil)
+        return
+      }
+      
+      resolve(metadata)
+    }
+  }
+  
+  func writeToAsset(uri: String, exif: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
+    let assetId = String(uri[uri.index(uri.startIndex, offsetBy: 5)...])
+    guard let asset = getAssetBy(id: assetId) else {
+      reject("Error", "Cannot retrieve asset.", nil)
+      return
+    }
+    
+    let imageOptions = PHContentEditingInputRequestOptions()
+    imageOptions.isNetworkAccessAllowed = true
+    
+    asset.requestContentEditingInput(with: imageOptions) { contentInput, _ in
+      guard let contentInput, let url = contentInput.fullSizeImageURL else {
+        reject("Error", "Unable to read metadata from asset", nil)
+        return
+      }
+      
+      updateMetadata(url: url, exif: exif) { metadata, data in
+        guard let metadata, let data else {
+          reject("Error", "Could not update metadata", nil)
+          return
+        }
+        
+        do {
+          try PHPhotoLibrary.shared().performChangesAndWait{
+            let request = PHAssetCreationRequest.forAsset()
+            request.addResource(with: .photo, data: data, options: nil)
+            request.creationDate = Date()
+            resolve(metadata)
+          }
+        } catch let error {
+          reject("Error", "Could not save to image file", nil)
+          print(error)
+        }
       }
     }
   }
   
   func writeToLocal(uri: String, exif: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
-    guard let url = URL(string: uri), let ciImage = CIImage(contentsOf: url) else {
-      resolve(nil)
+    guard let url = URL(string: uri) else {
+      reject("Error", "Invalid URL", nil)
       return
     }
-    
-    var metadata = ciImage.properties
-    
-    guard let exifDict = metadata[kCGImagePropertyExifDictionary as String] as? NSDictionary else {
-      return
-    }
-    
-    let updatedExif = updateExif(
-      metadata: exifDict,
-      with: exif
-    )
-    
-    var gpsDict = [String: Any]()
 
-    let gpsLatitude = exif["GPSLatitude"] as? Double
-    if let latitude = gpsLatitude {
-      gpsDict[kCGImagePropertyGPSLatitude as String] = abs(latitude)
-      gpsDict[kCGImagePropertyGPSLatitudeRef as String] = latitude >= 0 ? "N" : "S"
-    }
-
-    let gpsLongitude = exif["GPSLongitude"] as? Double
-    if let longitude = gpsLongitude {
-      gpsDict[kCGImagePropertyGPSLongitude as String] = abs(longitude)
-      gpsDict[kCGImagePropertyGPSLongitudeRef as String] = longitude >= 0 ? "E" : "W"
-    }
-
-    let gpsAltitude = exif["GPSAltitude"] as? Double
-    if let altitude = gpsAltitude {
-      gpsDict[kCGImagePropertyGPSAltitude as String] = abs(altitude)
-      gpsDict[kCGImagePropertyGPSAltitudeRef as String] = altitude >= 0 ? 0 : 1
-    }
-
-    if metadata[kCGImagePropertyGPSDictionary as String] == nil {
-      metadata[kCGImagePropertyGPSDictionary as String] = gpsDict
-    } else {
-      if let metadataGpsDict = metadata[kCGImagePropertyGPSDictionary as String] as? NSMutableDictionary {
-        metadataGpsDict.addEntries(from: gpsDict)
-      }
-    }
-    
-    metadata[kCGImagePropertyExifDictionary as String] = updatedExif
-    
-    do {
-      guard let uiImage = UIImage(data: try Data(contentsOf: url)) else {
-        reject("Error", "Unable to create image from URI", nil)
-        return
-      }
-
-      let data = getUpdatedData(
-        from: uiImage,
-        with: metadata,
-        quality: 1
-      )
-      
-      guard let data else {
-        reject("Error", "Could not save data", nil)
+    updateMetadata(url: url, exif: exif) { metadata, data in
+      guard let metadata, let data else {
+        reject("Error", "Could not update metadata", nil)
         return
       }
       
-      try data.write(to: url, options: .atomic)
-      resolve(metadata)
-      
-    } catch let error {
-      print(error)
+      do {
+        // Write to the current file
+        try data.write(to: url, options: .atomic)
+        resolve(metadata)
+      } catch let error {
+        reject("Error", "Could not save to image file", nil)
+        print(error)
+      }
     }
   }
 
@@ -114,7 +100,7 @@ class Exify: NSObject {
   @objc(writeAsync:withExif:withResolver:withRejecter:)
   func writeAsync(uri: String, exif: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
     if uri.starts(with: "ph://") {
-      reject("Error", "We don't support ph://, yet", nil)
+      writeToAsset(uri: uri, exif: exif, resolve: resolve, reject: reject)
     } else {
       writeToLocal(uri: uri, exif: exif, resolve: resolve, reject: reject)
     }
