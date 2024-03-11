@@ -28,7 +28,7 @@ class Exify: NSObject {
     }
   }
   
-  func writeToAsset(uri: String, exif: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
+  func writeToAsset(uri: String, data: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
     let assetId = String(uri[uri.index(uri.startIndex, offsetBy: 5)...])
     guard let asset = getAssetBy(id: assetId) else {
       reject("Error", "Cannot retrieve asset.", nil)
@@ -44,7 +44,7 @@ class Exify: NSObject {
         return
       }
       
-      updateMetadata(url: url, exif: exif) { metadata, data in
+      updateMetadata(url: url, data: data) { metadata, data in
         guard let metadata, let data else {
           reject("Error", "Could not update metadata", nil)
           return
@@ -55,7 +55,14 @@ class Exify: NSObject {
             let request = PHAssetCreationRequest.forAsset()
             request.addResource(with: .photo, data: data, options: nil)
             request.creationDate = Date()
-            resolve(metadata)
+            
+            let assetId = request.placeholderForCreatedAsset!.localIdentifier
+            resolve([
+              "uri": "ph://\(assetId)",
+              "assetId": assetId,
+              "exif": metadata
+            ])
+            
           }
         } catch let error {
           reject("Error", "Could not save to image file", nil)
@@ -65,13 +72,13 @@ class Exify: NSObject {
     }
   }
   
-  func writeToLocal(uri: String, exif: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
+  func writeToLocal(uri: String, data: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
     guard let url = URL(string: uri) else {
       reject("Error", "Invalid URL", nil)
       return
     }
 
-    updateMetadata(url: url, exif: exif) { metadata, data in
+    updateMetadata(url: url, data: data) { metadata, data in
       guard let metadata, let data else {
         reject("Error", "Could not update metadata", nil)
         return
@@ -80,7 +87,13 @@ class Exify: NSObject {
       do {
         // Write to the current file
         try data.write(to: url, options: .atomic)
-        resolve(metadata)
+
+        resolve([
+          "uri": uri,
+          "assetId": nil,
+          "exif": metadata
+        ])
+        
       } catch let error {
         reject("Error", "Could not save to image file", nil)
         print(error)
@@ -98,11 +111,11 @@ class Exify: NSObject {
   }
 
   @objc(writeAsync:withExif:withResolver:withRejecter:)
-  func writeAsync(uri: String, exif: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
+  func writeAsync(uri: String, data: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
     if uri.starts(with: "ph://") {
-      writeToAsset(uri: uri, exif: exif, resolve: resolve, reject: reject)
+      writeToAsset(uri: uri, data: data, resolve: resolve, reject: reject)
     } else {
-      writeToLocal(uri: uri, exif: exif, resolve: resolve, reject: reject)
+      writeToLocal(uri: uri, data: data, resolve: resolve, reject: reject)
     }
   }
 }

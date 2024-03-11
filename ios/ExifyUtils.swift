@@ -1,5 +1,21 @@
 import Photos
 
+extension UIImage.Orientation {
+  init(_ cgOrientation: CGImagePropertyOrientation) {
+    switch cgOrientation {
+      case .up: self = .up
+      case .upMirrored: self = .upMirrored
+      case .down: self = .down
+      case .downMirrored: self = .downMirrored
+      case .left: self = .left
+      case .leftMirrored: self = .leftMirrored
+      case .right: self = .right
+      case .rightMirrored: self = .rightMirrored
+      default: self = .up
+    }
+  }
+}
+
 func getAssetBy(id: String?) -> PHAsset? {
   if let id {
     return getAssetsBy(assetIds: [id]).firstObject
@@ -27,7 +43,7 @@ func getMetadata(from url: URL?) -> [String: Any]? {
   return metadata
 }
 
-func getMutableExif(metadata: NSDictionary) -> NSMutableDictionary {
+func getExifMetadata(metadata: NSDictionary) -> NSMutableDictionary {
   let mutableMetadata = NSMutableDictionary(dictionary: metadata)
 
   if let gps = mutableMetadata[kCGImagePropertyGPSDictionary as String] as? [String: Any] {
@@ -39,24 +55,19 @@ func getMutableExif(metadata: NSDictionary) -> NSMutableDictionary {
   return mutableMetadata
 }
 
-func getOrientation(from orientation: UIImage.Orientation) -> Int {
-  switch orientation {
-  case .left:
-    return 90
-  case .right:
-    return -90
-  case .down:
-    return 180
-  default:
-    return 0
+func getMetadata(from data: CFData?) -> [String: Any]? {
+  guard let data, let sourceCGImageSourceRef = CGImageSourceCreateWithData(data, nil),
+        let metadata = CGImageSourceCopyPropertiesAtIndex(sourceCGImageSourceRef, 0, nil) as? [String: Any] else {
+    return nil
   }
+  
+  return metadata
 }
 
-func updateMetadata(url: URL?, exif: [String: Any], completionHandler: @escaping ([String: Any]?, Data?) -> Void) -> Void {
+func updateMetadata(url: URL?, data: [String: Any], completionHandler: @escaping ([String: Any]?, Data?) -> Void) -> Void {
   guard let url,
-        let uiImage = UIImage(contentsOfFile: url.path),
+        var uiImage = UIImage(contentsOfFile: url.path),
         var metadata = getMetadata(from: url),
-        let exifDict = metadata[kCGImagePropertyExifDictionary as String] as? NSDictionary,
         let sourceCGImageRef = uiImage.cgImage,
         let sourceData = uiImage.jpegData(compressionQuality: 1.0) as CFData?,
         let sourceCGImageSourceRef = CGImageSourceCreateWithData(sourceData, nil),
@@ -64,40 +75,67 @@ func updateMetadata(url: URL?, exif: [String: Any], completionHandler: @escaping
     return
   }
   
-  // Create mutable exif metadata
-  let mutableExif = getMutableExif(metadata: exifDict)
-  mutableExif.addEntries(from: ["Orientation": getOrientation(from: uiImage.imageOrientation)])
+  // Handle Orientation
+  if let orientation = data["Orientation"] as? UInt32 {
+    let cgOrientation = CGImagePropertyOrientation(rawValue: orientation)
+    uiImage = UIImage(cgImage: sourceCGImageRef, scale: 1, orientation: UIImage.Orientation(cgOrientation!))
+    
+    let orignalMetadata = NSMutableDictionary(dictionary: metadata as NSDictionary)
+    
+    let newMetadata = getMetadata(from: uiImage.jpegData(compressionQuality: 1.0) as CFData?)!
+    orignalMetadata.addEntries(from: newMetadata)
+
+    // Retain Exif info from original metadata
+    orignalMetadata[kCGImagePropertyExifDictionary as String] = metadata[kCGImagePropertyExifDictionary as String]
+    
+    let tiffDict = metadata[kCGImagePropertyTIFFDictionary as String] as? NSDictionary
+    let tiffMetadata = NSMutableDictionary(dictionary: tiffDict! )
+    tiffMetadata[kCGImagePropertyTIFFOrientation] = orientation
+    
+    orignalMetadata[kCGImagePropertyTIFFDictionary as String] = tiffMetadata
+    orignalMetadata[kCGImagePropertyOrientation as String] = orientation
+
+    // Use new metadata
+    metadata = orignalMetadata as! [String: Any]
+  }
   
-  // Append exif data
-  mutableExif.addEntries(from: exif)
+  // Append additional Exif data
+  if let exif = data["Exif"] as? [String: Any] {
+    let exifDict = metadata[kCGImagePropertyExifDictionary as String] as? NSDictionary
+
+    let exifMetadata = NSMutableDictionary(dictionary: exifDict! )
+    exifMetadata.addEntries(from: exif)
+
+    metadata[kCGImagePropertyExifDictionary as String] = exifMetadata
+  }
   
-  // Update GPS exif data
-  var gpsDict = [String: Any]()
+  // Update additional GPS exif data
+  if let gps = data["GPS"] as? [String: Any] {
+    var gpsDict = [String: Any]()
 
-  if let latitude = exif["GPSLatitude"] as? Double {
-    gpsDict[kCGImagePropertyGPSLatitude as String] = abs(latitude)
-    gpsDict[kCGImagePropertyGPSLatitudeRef as String] = latitude >= 0 ? "N" : "S"
-  }
+    if let latitude = gps["GPSLatitude"] as? Double {
+      gpsDict[kCGImagePropertyGPSLatitude as String] = abs(latitude)
+      gpsDict[kCGImagePropertyGPSLatitudeRef as String] = latitude >= 0 ? "N" : "S"
+    }
 
-  if let longitude = exif["GPSLongitude"] as? Double {
-    gpsDict[kCGImagePropertyGPSLongitude as String] = abs(longitude)
-    gpsDict[kCGImagePropertyGPSLongitudeRef as String] = longitude >= 0 ? "E" : "W"
-  }
+    if let longitude = gps["GPSLongitude"] as? Double {
+      gpsDict[kCGImagePropertyGPSLongitude as String] = abs(longitude)
+      gpsDict[kCGImagePropertyGPSLongitudeRef as String] = longitude >= 0 ? "E" : "W"
+    }
 
-  if let altitude = exif["GPSAltitude"] as? Double {
-    gpsDict[kCGImagePropertyGPSAltitude as String] = abs(altitude)
-    gpsDict[kCGImagePropertyGPSAltitudeRef as String] = altitude >= 0 ? 0 : 1
-  }
+    if let altitude = gps["GPSAltitude"] as? Double {
+      gpsDict[kCGImagePropertyGPSAltitude as String] = abs(altitude)
+      gpsDict[kCGImagePropertyGPSAltitudeRef as String] = altitude >= 0 ? 0 : 1
+    }
 
-  if metadata[kCGImagePropertyGPSDictionary as String] == nil {
-    metadata[kCGImagePropertyGPSDictionary as String] = gpsDict
-  } else {
-    if let metadataGpsDict = metadata[kCGImagePropertyGPSDictionary as String] as? NSMutableDictionary {
-      metadataGpsDict.addEntries(from: gpsDict)
+    if metadata[kCGImagePropertyGPSDictionary as String] == nil {
+      metadata[kCGImagePropertyGPSDictionary as String] = gpsDict
+    } else {
+      if let metadataGpsDict = metadata[kCGImagePropertyGPSDictionary as String] as? NSMutableDictionary {
+        metadataGpsDict.addEntries(from: gpsDict)
+      }
     }
   }
-  
-  metadata[kCGImagePropertyExifDictionary as String] = mutableExif
   
   let updatedMetadata = NSMutableDictionary(dictionary: sourceMetadata)
 

@@ -42,16 +42,19 @@ const App = () => {
     console.log(json(result))
   }
 
-  const writeExif = async (uri: string, exif?: Exify.Exif) => {
+  const writeExif = async (uri: string) => {
     const position = mockPosition()
 
     // Add additional exif e.g. GPS
     const result = await Exify.writeAsync(uri, {
-      ...exif,
-      GPSLatitude: position[1],
-      GPSLongitude: position[0],
-      Orientation: -90,
-      UserComment: 'Exif updated via react-native-exify',
+      Orientation: 7,
+      GPS: {
+        GPSLatitude: position[1],
+        GPSLongitude: position[0],
+      },
+      Exif: {
+        UserComment: 'Exif updated via react-native-exify',
+      },
     })
 
     console.log(json(result))
@@ -94,7 +97,7 @@ const App = () => {
             const assetInfo = await MediaLibrary.getAssetInfoAsync(asset.assetId)
 
             await readExif(assetInfo.uri)
-            await writeExif(assetInfo.uri)
+            // await writeExif(assetInfo.uri)
           }
         }
       }
