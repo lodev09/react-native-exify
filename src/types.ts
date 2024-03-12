@@ -4,22 +4,6 @@
  * @see https://exiftool.org/TagNames/EXIF.html
  */
 export interface ExifData {
-  /**
-   * 1 = Horizontal (normal),
-   * 2 = Mirror horizontal,
-   * 3 = Rotate 180,
-   * 4 = Mirror vertical,
-   * 5 = Mirror horizontal and rotate 270 CW,
-   * 6 = Rotate 90 CW,
-   * 7 = Mirror horizontal and rotate 90 CW,
-   * 8 = Rotate 270 CW,
-   */
-  Orientation?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
-  /**
-   * Rotation in degrees.
-   * 0, 90, -90, 180
-   */
-  Rotation?: 0 | 90 | -90 | 180
   GPS: {
     GPSLongitude?: number
     GPSLatitude?: number

@@ -47,7 +47,6 @@ const App = () => {
 
     // Add additional exif e.g. GPS
     const result = await Exify.writeAsync(uri, {
-      Orientation: 7,
       GPS: {
         GPSLatitude: position[1],
         GPSLongitude: position[0],
@@ -177,8 +176,8 @@ const $image: ImageStyle = {
 const $library: ImageStyle = {
   position: 'absolute',
   left: SPACE * 2,
-  width: SPACE * 3,
-  height: SPACE * 3,
+  width: SPACE * 5,
+  height: SPACE * 5,
   borderRadius: 4,
   marginRight: SPACE,
   borderWidth: 2,

@@ -18,49 +18,25 @@ func getAssetsBy(assetIds: [String]) -> PHFetchResult<PHAsset> {
   return PHAsset.fetchAssets(withLocalIdentifiers: assetIds, options: options)
 }
 
-func getExifMetadata(metadata: NSDictionary) -> NSMutableDictionary {
-  let mutableMetadata = NSMutableDictionary(dictionary: metadata)
-
-  if let gps = mutableMetadata[kCGImagePropertyGPSDictionary as String] as? [String: Any] {
-    for (gpsKey, gpsValue) in gps {
-      mutableMetadata["GPS" + gpsKey] = gpsValue
-    }
-  }
-
-  return mutableMetadata
-}
-
-func getMetadata(from url: URL?) -> NSMutableDictionary? {
+func getMetadata(from url: URL?) -> NSMutableDictionary {
   guard let url, let sourceImage = CGImageSourceCreateWithURL(url as CFURL, nil),
         let metadataDict = CGImageSourceCopyPropertiesAtIndex(sourceImage, 0, nil) else {
-    return nil
+    return [:]
   }
   
   return NSMutableDictionary(dictionary: metadataDict)
 }
 
-func updateMetadata(url: URL, with newMetadata: [String: Any], completionHanlder: @escaping (CFDictionary?, Data?) -> Void) -> Void {
-  guard var uiImage = UIImage(contentsOfFile: url.path),
-    let imageMetadata = getMetadata(from: url) else {
+func updateMetadata(url: URL, with newMetadata: [String: Any], completionHanlder: (CFDictionary?, Data?) -> Void) -> Void {
+  guard var uiImage = UIImage(contentsOfFile: url.path) else {
     return
   }
   
-  // Handle Orientation
-  if let orientation = newMetadata["Orientation"] as? Int {
-    let cgOrientation = UIImage.Orientation(rawValue: orientation)
-    
-    // Mutate image with new orientation
-    uiImage = UIImage(cgImage: uiImage.cgImage!, scale: 1, orientation: cgOrientation!)
-    
-    imageMetadata[kCGImagePropertyOrientation as String] = cgOrientation?.rawValue
-    if let tiff = imageMetadata[kCGImagePropertyTIFFDictionary as String] as? NSMutableDictionary {
-      tiff[kCGImagePropertyTIFFOrientation as String] = cgOrientation?.rawValue
-    }
-  }
+  let metadata = getMetadata(from: url)
   
   // Append additional Exif data
   if let exif = newMetadata["Exif"] as? [String: Any] {
-    let exifDict = imageMetadata[kCGImagePropertyExifDictionary as String] as? NSMutableDictionary
+    let exifDict = metadata[kCGImagePropertyExifDictionary as String] as? NSMutableDictionary
     exifDict!.addEntries(from: exif)
   }
   
@@ -83,17 +59,16 @@ func updateMetadata(url: URL, with newMetadata: [String: Any], completionHanlder
       gpsDict[kCGImagePropertyGPSAltitudeRef as String] = altitude >= 0 ? 0 : 1
     }
 
-    if imageMetadata[kCGImagePropertyGPSDictionary as String] == nil {
-      imageMetadata[kCGImagePropertyGPSDictionary as String] = gpsDict
+    if metadata[kCGImagePropertyGPSDictionary as String] == nil {
+      metadata[kCGImagePropertyGPSDictionary as String] = gpsDict
     } else {
-      if let metadataGpsDict = imageMetadata[kCGImagePropertyGPSDictionary as String] as? NSMutableDictionary {
+      if let metadataGpsDict = metadata[kCGImagePropertyGPSDictionary as String] as? NSMutableDictionary {
         metadataGpsDict.addEntries(from: gpsDict)
       }
     }
   }
   
-  print(kCGImageDestinationLossyCompressionQuality)
-  // imageMetadata.setObject(NSNumber(value: 1), forKey: kCGImageDestinationLossyCompressionQuality as NSString)
+  metadata.setObject(NSNumber(value: 1), forKey: kCGImageDestinationLossyCompressionQuality as NSString)
   
   let destinationData = NSMutableData()
 
@@ -104,8 +79,8 @@ func updateMetadata(url: URL, with newMetadata: [String: Any], completionHanlder
     return
   }
 
-  CGImageDestinationAddImage(destination, uiImage.cgImage!, imageMetadata)
+  CGImageDestinationAddImage(destination, uiImage.cgImage!, metadata)
   if CGImageDestinationFinalize(destination) {
-    completionHanlder(imageMetadata, destinationData as Data)
+    completionHanlder(metadata, destinationData as Data)
   }
 }

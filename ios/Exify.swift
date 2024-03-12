@@ -19,11 +19,12 @@ class Exify: NSObject {
     imageOptions.isNetworkAccessAllowed = true
 
     asset.requestContentEditingInput(with: imageOptions) { contentInput, info in
-      guard let url = contentInput?.fullSizeImageURL, let metadata = getMetadata(from: url) else {
+      guard let url = contentInput?.fullSizeImageURL else {
         resolve(nil)
         return
       }
       
+      let metadata = getMetadata(from: url)
       resolve(metadata)
     }
   }
