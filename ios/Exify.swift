@@ -44,7 +44,7 @@ class Exify: NSObject {
         return
       }
       
-      updateMetadata(url: url, data: data) { metadata, data in
+      updateMetadata(url: url, with: data) { metadata, data in
         guard let metadata, let data else {
           reject("Error", "Could not update metadata", nil)
           return
@@ -78,7 +78,7 @@ class Exify: NSObject {
       return
     }
 
-    updateMetadata(url: url, data: data) { metadata, data in
+    updateMetadata(url: url, with: data) { metadata, data in
       guard let metadata, let data else {
         reject("Error", "Could not update metadata", nil)
         return
