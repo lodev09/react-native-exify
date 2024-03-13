@@ -1,5 +1,5 @@
 import { NativeModules, Platform } from 'react-native'
-import type { ExifData, ExifyWriteResult } from './types'
+import type { ExifTags, ExifyWriteResult } from './types'
 
 const LINKING_ERROR =
   `The package '@lodev09/react-native-exify' doesn't seem to be linked. Make sure: \n\n` +
@@ -21,19 +21,19 @@ const Exify = NativeModules.Exify
 /**
  * Write Exif data into an image file.
  * @param  {string}          uri the image uri to write
- * @param  {ExifData}        data the exif tags to be written
+ * @param  {ExifTags}        tags the exif tags to be written
  * @return {Promise<ExifyWriteResult>}      the full exif tags of the image
  */
-export function writeAsync(uri: string, data: ExifData): Promise<ExifyWriteResult | undefined> {
-  return Exify.writeAsync(uri, data)
+export function writeAsync(uri: string, tags: ExifTags): Promise<ExifyWriteResult | undefined> {
+  return Exify.writeAsync(uri, tags)
 }
 
 /**
  * Read Exif data from an image file.
  * @param  {string}        uri the image uri to read
- * @return {Promise<object>}     the raw exif tags of the image
+ * @return {Promise<ExifTags>}     the raw exif tags of the image
  */
-export function readAsync(uri: string): Promise<object | undefined> {
+export function readAsync(uri: string): Promise<ExifTags | undefined> {
   return Exify.readAsync(uri)
 }
 

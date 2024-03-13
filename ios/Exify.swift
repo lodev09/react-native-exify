@@ -5,7 +5,7 @@ class Exify: NSObject {
 
   func readFromFile(uri: String, resolve: @escaping RCTPromiseResolveBlock) -> Void {
     let metadata = getMetadata(from: URL(string: uri))
-    resolve(metadata)
+    resolve(getTags(from: metadata))
   }
 
   func readFromAsset(uri: String, resolve: @escaping RCTPromiseResolveBlock) -> Void {
@@ -25,11 +25,11 @@ class Exify: NSObject {
       }
       
       let metadata = getMetadata(from: url)
-      resolve(metadata)
+      resolve(getTags(from: metadata))
     }
   }
   
-  func writeToAsset(uri: String, data: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
+  func writeToAsset(uri: String, tags: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
     let assetId = String(uri[uri.index(uri.startIndex, offsetBy: 5)...])
     guard let asset = getAssetBy(id: assetId) else {
       reject("Error", "Cannot retrieve asset.", nil)
@@ -45,7 +45,7 @@ class Exify: NSObject {
         return
       }
       
-      updateMetadata(url: url, with: data) { metadata, data in
+      updateMetadata(url: url, with: tags) { metadata, data in
         guard let metadata, let data else {
           reject("Error", "Could not update metadata", nil)
           return
@@ -61,7 +61,7 @@ class Exify: NSObject {
             resolve([
               "uri": "ph://\(assetId)",
               "assetId": assetId,
-              "exif": metadata
+              "tags": getTags(from: metadata),
             ])
             
           }
@@ -73,13 +73,13 @@ class Exify: NSObject {
     }
   }
   
-  func writeToLocal(uri: String, data: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
+  func writeToLocal(uri: String, tags: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
     guard let url = URL(string: uri) else {
       reject("Error", "Invalid URL", nil)
       return
     }
 
-    updateMetadata(url: url, with: data) { metadata, data in
+    updateMetadata(url: url, with: tags) { metadata, data in
       guard let metadata, let data else {
         reject("Error", "Could not update metadata", nil)
         return
@@ -92,7 +92,7 @@ class Exify: NSObject {
         resolve([
           "uri": uri,
           "assetId": nil,
-          "exif": metadata
+          "tags": getTags(from: metadata),
         ])
         
       } catch let error {
@@ -112,11 +112,11 @@ class Exify: NSObject {
   }
 
   @objc(writeAsync:withExif:withResolver:withRejecter:)
-  func writeAsync(uri: String, data: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
+  func writeAsync(uri: String, tags: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
     if uri.starts(with: "ph://") {
-      writeToAsset(uri: uri, data: data, resolve: resolve, reject: reject)
+      writeToAsset(uri: uri, tags: tags, resolve: resolve, reject: reject)
     } else {
-      writeToLocal(uri: uri, data: data, resolve: resolve, reject: reject)
+      writeToLocal(uri: uri, tags: tags, resolve: resolve, reject: reject)
     }
   }
 }

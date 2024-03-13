@@ -47,13 +47,9 @@ const App = () => {
 
     // Add additional exif e.g. GPS
     const result = await Exify.writeAsync(uri, {
-      GPS: {
-        GPSLatitude: position[1],
-        GPSLongitude: position[0],
-      },
-      Exif: {
-        UserComment: 'Exif updated via react-native-exify',
-      },
+      GPSLatitude: position[1],
+      GPSLongitude: position[0],
+      UserComment: 'Exif updated via react-native-exify',
     })
 
     console.log(json(result))
@@ -90,15 +86,20 @@ const App = () => {
       })
 
       if (!result.canceled) {
-        for (const asset of result.assets) {
-          if (asset.assetId) {
-            // Get asset uri first to get full exif information
-            const assetInfo = await MediaLibrary.getAssetInfoAsync(asset.assetId)
+        const asset = result.assets[0]
+        if (asset?.assetId) {
+          // Get asset uri first to get full exif information
+          const assetInfo = await MediaLibrary.getAssetInfoAsync(asset.assetId)
 
-            await readExif(assetInfo.uri)
-            // await writeExif(assetInfo.uri)
-          }
+          await readExif(assetInfo.uri)
+          // await writeExif(assetInfo.uri)
+        } else if (asset?.uri) {
+          // Read from picker temp file
+          await readExif(asset.uri)
+        } else {
+          console.warn('URI not found!')
         }
+
       }
     } catch (e) {
       console.error(e)
@@ -176,8 +177,8 @@ const $image: ImageStyle = {
 const $library: ImageStyle = {
   position: 'absolute',
   left: SPACE * 2,
-  width: SPACE * 5,
-  height: SPACE * 5,
+  width: SPACE * 3,
+  height: SPACE * 3,
   borderRadius: 4,
   marginRight: SPACE,
   borderWidth: 2,
