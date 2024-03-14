@@ -1,6 +1,8 @@
-# @lodev09/react-native-exify
+# React Native Exify
 
 A simple library to read and write image Exif metadata in React Native.
+
+Inspired from [this thread](https://github.com/mrousavy/react-native-vision-camera/issues/780).
 
 ## Features
 - Read Exif data from an image
