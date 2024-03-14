@@ -44,8 +44,9 @@ console.log(result.tags)
 
 See [example](example) for more detailed usage.
 
-💡 Note: On IOS, writing exif into an Asset file will duplicate the image.
-Try to write to a local file first before saving!
+ℹ️ Note that on IOS, writing exif into an Asset file will duplicate the image. IOS does not allow writing exif into an Asset file directly.
+
+If you're getting the photo from a [camera](https://github.com/mrousavy/react-native-vision-camera/), write it into the output file first before saving to the Asset library!
 
 ## Contributing
 Contributions are welcome!

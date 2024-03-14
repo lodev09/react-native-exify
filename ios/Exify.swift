@@ -71,10 +71,10 @@ class Exify: NSObject {
             request.addResource(with: .photo, data: data, options: nil)
             request.creationDate = Date()
             
-            let assetId = request.placeholderForCreatedAsset!.localIdentifier
+            let newAssetId = request.placeholderForCreatedAsset!.localIdentifier
             resolve([
-              "uri": "ph://\(assetId)",
-              "assetId": assetId,
+              "uri": "ph://\(newAssetId)",
+              "assetId": newAssetId,
               "tags": getExifTags(from: metadata),
             ])
             
@@ -105,7 +105,6 @@ class Exify: NSObject {
 
         resolve([
           "uri": uri,
-          "assetId": nil,
           "tags": getExifTags(from: metadata),
         ])
         

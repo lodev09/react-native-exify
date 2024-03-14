@@ -122,14 +122,14 @@ func updateMetadata(url: URL, with tags: [String: Any], completionHanlder: (NSDi
   
   let destinationData = NSMutableData()
 
-  guard let uiImage = UIImage(contentsOfFile: url.path),
-    let sourceType = CGImageSourceGetType(cgImageSource),
+  guard let sourceType = CGImageSourceGetType(cgImageSource),
     let destination = CGImageDestinationCreateWithData(destinationData, sourceType, 1, nil) else {
     return
   }
 
-  CGImageDestinationAddImage(destination, uiImage.cgImage!, metadata)
+  CGImageDestinationAddImageFromSource(destination, cgImageSource, 0, metadata)
   if CGImageDestinationFinalize(destination) {
     completionHanlder(metadata, destinationData as Data)
   }
 }
+

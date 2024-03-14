@@ -1,5 +1,6 @@
 /**
  * From Android's ExifInterface Tags
+ * Normalized for both IOS and Android
  */
 export interface ExifTags {
   SensorLeftBorder?: number
@@ -147,15 +148,20 @@ export interface ExifTags {
 export interface ExifyWriteResult {
   /**
    * The URI of the image that was written.
-   * On IOS asset, this will be new URI created.
+   * On IOS: If input URI is an asset, this will be new URI created.
+   *
+   * This will return exactly the same as the input URI if the input URI is from a local file.
    */
-  uri?: string
+  uri: string
   /**
-   * Media Library Asset ID
+   * A newly created asset ID on IOS.
+   * Writing exif metadata into an asset file will create a new asset file.
+   *
+   * @platform ios
    */
-  assetId?: string | null
+  assetId?: string
   /**
-   * Raw EXIF data from the platform
+   * Normalized Exif tags
    */
   tags?: ExifTags
 }

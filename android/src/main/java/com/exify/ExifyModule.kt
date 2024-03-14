@@ -80,7 +80,6 @@ class ExifyModule(reactContext: ReactApplicationContext) :
         }
 
         params.putString("uri", uri)
-        params.putString("assetId", null)
         params.putMap("tags", formatTags(exif))
 
         exif.saveAttributes()
