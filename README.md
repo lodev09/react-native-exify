@@ -1,6 +1,6 @@
 # @lodev09/react-native-exify
 
-A simple library to read and write Exif metadata from images in React Native.
+A simple library to read and write image Exif metadata in React Native.
 
 ## Features
 - Read Exif data from an image
@@ -25,7 +25,6 @@ import { writeAsync, readAsync, ExifTags } from '@lodev09/react-native-exify';
 // ...
 const uri = 'file://path/to/image.jpg'
 
-// Read exif from image via URI
 const tags = await readAsync(uri)
 console.log(tags)
 ```
@@ -34,11 +33,13 @@ console.log(tags)
 ```ts
 const uri = 'file://path/to/image.jpg'
 const newTags: ExifTags = {
-  Make: 'Apple',
-  Model: 'iPhone 12 Pro Max',
-  Software: '14.4.2'
+  GPSLatitude: 69.696969,
+  GPSLongitude: 69.696969,
+  UserComment: 'Someone wrote GPS here!',
 }
-const response = await writeAsync(uri, newTags)
+
+const result = await writeAsync(uri, newTags)
+console.log(result)
 ```
 
 💡 Note: On IOS, writing exif into an Asset file will duplicate the image.
