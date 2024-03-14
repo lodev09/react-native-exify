@@ -29,7 +29,7 @@ const CAPTURE_WRAPPER_SIZE = CAPTURE_BUTTON_SIZE + SPACE
 const App = () => {
   const camera = useRef<Camera>(null)
 
-  const [libraryUri, setLibraryUri] = useState<string | undefined>()
+  const [previewUri, setPreviewUri] = useState<string | undefined>()
 
   const cameraPermission = useCameraPermission()
   const microphonePermission = useMicrophonePermission()
@@ -62,7 +62,15 @@ const App = () => {
       const photo = await camera.current?.takePhoto()
       if (photo) {
         const photoUri = `file://${photo.path}`
+
+        // Write asset to the photo
         await writeExif(photoUri)
+
+        const permission = await MediaLibrary.requestPermissionsAsync()
+        if (permission.granted) {
+          const asset = await MediaLibrary.createAssetAsync(photoUri)
+          setPreviewUri(asset.uri)
+        }
       }
     } catch (e) {
       console.error(e)
@@ -87,6 +95,7 @@ const App = () => {
           // await writeExif(assetInfo.uri)
         } else if (asset?.uri) {
           // Read from picker temp file
+          // less exif when using expo-media-library
           await readExif(asset.uri)
         } else {
           console.warn('URI not found!')
@@ -110,7 +119,7 @@ const App = () => {
       if (mediaLibraryPermission?.granted) {
         const result = await MediaLibrary.getAssetsAsync({ first: 1, mediaType: 'photo' })
         if (result.assets.length) {
-          setLibraryUri(result.assets[0]?.uri)
+          setPreviewUri(result.assets[0]?.uri)
         }
       }
     })()
@@ -131,7 +140,7 @@ const App = () => {
       {cameraPermission.hasPermission ? (
         <View style={$controlsContainer}>
           <TouchableOpacity activeOpacity={0.6} onPress={openLibrary} style={$library}>
-            <Image source={{ uri: libraryUri }} style={$image} />
+            <Image source={{ uri: previewUri }} style={$image} />
           </TouchableOpacity>
           <View style={$captureWrapper}>
             <TouchableOpacity activeOpacity={0.6} style={$captureButton} onPress={takePhoto} />

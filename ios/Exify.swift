@@ -11,14 +11,19 @@ import PhotosUI
 
 @objc(Exify)
 class Exify: NSObject {
-
-  func readFromFile(uri: String, resolve: @escaping RCTPromiseResolveBlock) -> Void {
-    let metadata = getMetadata(from: URL(string: uri))
-    resolve(getExifTags(from: metadata))
+  
+  func readExif(uri: String, resolve: @escaping RCTPromiseResolveBlock) -> Void {
+    guard let url = URL(string: uri) else {
+      resolve(nil)
+      return
+    }
+    
+    readExifTags(from: url) { tags in
+      resolve(tags)
+    }
   }
 
-  func readFromAsset(uri: String, resolve: @escaping RCTPromiseResolveBlock) -> Void {
-    let assetId = String(uri[uri.index(uri.startIndex, offsetBy: 5)...])
+  func readExif(assetId: String, resolve: @escaping RCTPromiseResolveBlock) -> Void {
     guard let asset = getAssetBy(id: assetId) else {
       resolve(nil)
       return
@@ -33,13 +38,13 @@ class Exify: NSObject {
         return
       }
       
-      let metadata = getMetadata(from: url)
-      resolve(getExifTags(from: metadata))
+      readExifTags(from: url) { tags in
+        resolve(tags)
+      }
     }
   }
   
-  func writeToAsset(uri: String, tags: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
-    let assetId = String(uri[uri.index(uri.startIndex, offsetBy: 5)...])
+  func writeExif(assetId: String, tags: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
     guard let asset = getAssetBy(id: assetId) else {
       reject("Error", "Cannot retrieve asset.", nil)
       return
@@ -82,7 +87,7 @@ class Exify: NSObject {
     }
   }
   
-  func writeToLocal(uri: String, tags: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
+  func writeExif(uri: String, tags: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
     guard let url = URL(string: uri) else {
       reject("Error", "Invalid URL", nil)
       return
@@ -114,18 +119,20 @@ class Exify: NSObject {
   @objc(readAsync:withResolver:withRejecter:)
   func readAsync(uri: String, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
     if uri.starts(with: "ph://") {
-      readFromAsset(uri: uri, resolve: resolve)
+      let assetId = String(uri[uri.index(uri.startIndex, offsetBy: 5)...])
+      readExif(assetId: assetId, resolve: resolve)
     } else {
-      readFromFile(uri: uri, resolve: resolve)
+      readExif(uri: uri, resolve: resolve)
     }
   }
 
   @objc(writeAsync:withExif:withResolver:withRejecter:)
   func writeAsync(uri: String, tags: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) -> Void {
     if uri.starts(with: "ph://") {
-      writeToAsset(uri: uri, tags: tags, resolve: resolve, reject: reject)
+      let assetId = String(uri[uri.index(uri.startIndex, offsetBy: 5)...])
+      writeExif(assetId: assetId, tags: tags, resolve: resolve, reject: reject)
     } else {
-      writeToLocal(uri: uri, tags: tags, resolve: resolve, reject: reject)
+      writeExif(uri: uri, tags: tags, resolve: resolve, reject: reject)
     }
   }
 }

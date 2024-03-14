@@ -61,17 +61,23 @@ func getExifTags(from metadata: NSDictionary) -> [String: Any] {
   return tags as! [String: Any]
 }
 
-func getMetadata(from url: URL?) -> NSMutableDictionary {
+func readExifTags(from url: URL?, completionHandler: ([String: Any]?) -> Void) -> Void {
   guard let url, let sourceImage = CGImageSourceCreateWithURL(url as CFURL, nil),
         let metadataDict = CGImageSourceCopyPropertiesAtIndex(sourceImage, 0, nil) else {
-    return [:]
+    return
   }
   
-  return NSMutableDictionary(dictionary: metadataDict)
+  let tags = getExifTags(from: metadataDict)
+  completionHandler(tags)
 }
 
 func updateMetadata(url: URL, with tags: [String: Any], completionHanlder: (NSDictionary?, Data?) -> Void) -> Void {
-  let metadata = getMetadata(from: url)
+  guard let cgImageSource = CGImageSourceCreateWithURL(url as CFURL, nil) else {
+    return
+  }
+  
+  let metadataDict = CGImageSourceCopyPropertiesAtIndex(cgImageSource, 0, nil) ?? [:] as CFDictionary
+  let metadata = NSMutableDictionary(dictionary: metadataDict)
 
   // Append additional Exif data
   let exifDict = metadata[kCGImagePropertyExifDictionary as String] as? NSMutableDictionary
@@ -117,8 +123,6 @@ func updateMetadata(url: URL, with tags: [String: Any], completionHanlder: (NSDi
   let destinationData = NSMutableData()
 
   guard let uiImage = UIImage(contentsOfFile: url.path),
-    let sourceData = uiImage.jpegData(compressionQuality: 1.0) as CFData?,
-    let cgImageSource = CGImageSourceCreateWithData(sourceData, nil),
     let sourceType = CGImageSourceGetType(cgImageSource),
     let destination = CGImageDestinationCreateWithData(destinationData, sourceType, 1, nil) else {
     return
