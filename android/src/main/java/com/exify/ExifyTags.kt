@@ -1,7 +1,11 @@
 package com.exify
 import androidx.exifinterface.media.ExifInterface
 
-val EXIF_TAGS = arrayOf(
+/**
+ * Supported Exif Tags
+ * Note: Latitude, Longitude and Altitude tags are updated separately
+ */
+val EXIFY_TAGS = arrayOf(
   arrayOf("string", ExifInterface.TAG_ARTIST),
   arrayOf("int", ExifInterface.TAG_BITS_PER_SAMPLE),
   arrayOf("int", ExifInterface.TAG_COMPRESSION),
@@ -93,7 +97,6 @@ val EXIF_TAGS = arrayOf(
   arrayOf("int", ExifInterface.TAG_SUBJECT_LOCATION),
   arrayOf("string", ExifInterface.TAG_USER_COMMENT),
   arrayOf("int", ExifInterface.TAG_WHITE_BALANCE),
-  // arrayOf("double", ExifInterface.TAG_GPS_ALTITUDE),
   arrayOf("int", ExifInterface.TAG_GPS_ALTITUDE_REF),
   arrayOf("string", ExifInterface.TAG_GPS_AREA_INFORMATION),
   arrayOf("double", ExifInterface.TAG_GPS_DOP),
@@ -110,9 +113,7 @@ val EXIF_TAGS = arrayOf(
   arrayOf("string", ExifInterface.TAG_GPS_H_POSITIONING_ERROR),
   arrayOf("double", ExifInterface.TAG_GPS_IMG_DIRECTION),
   arrayOf("string", ExifInterface.TAG_GPS_IMG_DIRECTION_REF),
-  // arrayOf("double", ExifInterface.TAG_GPS_LATITUDE),
   arrayOf("string", ExifInterface.TAG_GPS_LATITUDE_REF),
-  // arrayOf("double", ExifInterface.TAG_GPS_LONGITUDE),
   arrayOf("string", ExifInterface.TAG_GPS_LONGITUDE_REF),
   arrayOf("string", ExifInterface.TAG_GPS_MAP_DATUM),
   arrayOf("string", ExifInterface.TAG_GPS_MEASURE_MODE),

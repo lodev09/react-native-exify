@@ -24,7 +24,7 @@ func addTagEntries(from dictionary: CFString, metadata: NSDictionary, to tags: N
   }
 }
 
-func getTags(from metadata: NSDictionary) -> [String: Any] {
+func getExifTags(from metadata: NSDictionary) -> [String: Any] {
   let tags: NSMutableDictionary = [:]
   
   // Add root non-dictionary properties
@@ -85,6 +85,15 @@ func updateMetadata(url: URL, with tags: [String: Any], completionHanlder: (NSDi
     gpsDict[kCGImagePropertyGPSAltitude as String] = abs(altitude)
     gpsDict[kCGImagePropertyGPSAltitudeRef as String] = altitude >= 0 ? 0 : 1
   }
+  
+  if let gpsDate = tags["GPSDateStamp"] as? String {
+    gpsDict[kCGImagePropertyGPSDateStamp as String] = gpsDate
+  }
+  
+  if let gpsTime = tags["GPSTimeStamp"] as? String {
+    gpsDict[kCGImagePropertyGPSTimeStamp as String] = gpsTime
+  }
+  
 
   if metadata[kCGImagePropertyGPSDictionary as String] == nil {
     metadata[kCGImagePropertyGPSDictionary as String] = gpsDict

@@ -5,7 +5,7 @@ class Exify: NSObject {
 
   func readFromFile(uri: String, resolve: @escaping RCTPromiseResolveBlock) -> Void {
     let metadata = getMetadata(from: URL(string: uri))
-    resolve(getTags(from: metadata))
+    resolve(getExifTags(from: metadata))
   }
 
   func readFromAsset(uri: String, resolve: @escaping RCTPromiseResolveBlock) -> Void {
@@ -25,7 +25,7 @@ class Exify: NSObject {
       }
       
       let metadata = getMetadata(from: url)
-      resolve(getTags(from: metadata))
+      resolve(getExifTags(from: metadata))
     }
   }
   
@@ -61,7 +61,7 @@ class Exify: NSObject {
             resolve([
               "uri": "ph://\(assetId)",
               "assetId": assetId,
-              "tags": getTags(from: metadata),
+              "tags": getExifTags(from: metadata),
             ])
             
           }
@@ -92,7 +92,7 @@ class Exify: NSObject {
         resolve([
           "uri": uri,
           "assetId": nil,
-          "tags": getTags(from: metadata),
+          "tags": getExifTags(from: metadata),
         ])
         
       } catch let error {

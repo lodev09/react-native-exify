@@ -49,6 +49,8 @@ const App = () => {
     const result = await Exify.writeAsync(uri, {
       GPSLatitude: position[1],
       GPSLongitude: position[0],
+      GPSTimeStamp: '10:10:10',
+      GPSDateStamp: '2024:10:10',
       UserComment: 'Exif updated via react-native-exify',
     })
 
@@ -60,17 +62,7 @@ const App = () => {
       const photo = await camera.current?.takePhoto()
       if (photo) {
         const photoUri = `file://${photo.path}`
-
         await writeExif(photoUri)
-
-        const libraryPermission = await MediaLibrary.requestPermissionsAsync()
-        if (libraryPermission.granted) {
-          const asset = await MediaLibrary.createAssetAsync(photoUri)
-          setLibraryUri(asset.uri)
-          console.log('Saved to Asset')
-        } else {
-          console.log('Saved to Local')
-        }
       }
     } catch (e) {
       console.error(e)
@@ -99,7 +91,6 @@ const App = () => {
         } else {
           console.warn('URI not found!')
         }
-
       }
     } catch (e) {
       console.error(e)
@@ -128,7 +119,7 @@ const App = () => {
   if (!device) {
     return (
       <View style={$container}>
-        <Text style={$text}>Only available on your fully paid iPhone!</Text>
+        <Text style={$text}>Only available on your fully paid iPhone or Android!</Text>
       </View>
     )
   }
