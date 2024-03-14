@@ -31,9 +31,6 @@ You can use various commands from the root directory to work with the project.
 
 To start the packager:
 
-```sh
-yarn example start
-```
 
 To run the example app on Android:
 
