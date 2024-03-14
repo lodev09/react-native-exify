@@ -13,7 +13,7 @@
     "tidy": "prettier --write \"**/*.{js,json,ts,tsx}\""
   },
   "dependencies": {
-    "expo": "~50.0.11",
+    "expo": "~50.0.13",
     "expo-image": "~1.10.6",
     "expo-image-picker": "~14.7.1",
     "expo-media-library": "~15.9.1",
