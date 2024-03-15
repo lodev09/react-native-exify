@@ -5,7 +5,8 @@
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
-    "clean": "npx expo prebuild --clean",
+    "setup": "npx expo prebuild",
+    "clean": "yarn setup --clean",
     "doctor": "npx expo-doctor",
     "ios": "expo run:ios",
     "web": "expo start --web",
