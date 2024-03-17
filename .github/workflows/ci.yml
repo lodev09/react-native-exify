@@ -70,6 +70,9 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
+      - name: Prebuild example
+        run: yarn example setup
+
       - name: Cache turborepo for Android
         uses: actions/cache@v3
         with:
@@ -125,6 +128,9 @@ jobs:
 
       - name: Setup
         uses: ./.github/actions/setup
+
+      - name: Prebuild example
+        run: yarn example setup
 
       - name: Cache turborepo for iOS
         uses: actions/cache@v3
