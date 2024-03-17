@@ -64,6 +64,7 @@ func getExifTags(from metadata: NSDictionary) -> [String: Any] {
 func readExifTags(from url: URL?, completionHandler: ([String: Any]?) -> Void) -> Void {
   guard let url, let sourceImage = CGImageSourceCreateWithURL(url as CFURL, nil),
         let metadataDict = CGImageSourceCopyPropertiesAtIndex(sourceImage, 0, nil) else {
+    completionHandler(nil)
     return
   }
   
@@ -73,6 +74,7 @@ func readExifTags(from url: URL?, completionHandler: ([String: Any]?) -> Void) -
 
 func updateMetadata(url: URL, with tags: [String: Any], completionHanlder: (NSDictionary?, Data?) -> Void) -> Void {
   guard let cgImageSource = CGImageSourceCreateWithURL(url as CFURL, nil) else {
+    completionHanlder(nil, nil)
     return
   }
   
@@ -81,7 +83,7 @@ func updateMetadata(url: URL, with tags: [String: Any], completionHanlder: (NSDi
 
   // Append additional Exif data
   let exifDict = metadata[kCGImagePropertyExifDictionary as String] as? NSMutableDictionary
-  exifDict!.addEntries(from: tags)
+  exifDict?.addEntries(from: tags)
   
   // Handle GPS Tags
   var gpsDict = [String: Any]()
@@ -122,14 +124,15 @@ func updateMetadata(url: URL, with tags: [String: Any], completionHanlder: (NSDi
   
   let destinationData = NSMutableData()
 
-  guard let sourceType = CGImageSourceGetType(cgImageSource),
+  guard let uiImage = UIImage(contentsOfFile: url.path),
+    let sourceType = CGImageSourceGetType(cgImageSource),
     let destination = CGImageDestinationCreateWithData(destinationData, sourceType, 1, nil) else {
+    completionHanlder(nil, nil)
     return
   }
 
-  CGImageDestinationAddImageFromSource(destination, cgImageSource, 0, metadata)
-  if CGImageDestinationFinalize(destination) {
-    completionHanlder(metadata, destinationData as Data)
-  }
+  CGImageDestinationAddImage(destination, uiImage.cgImage!, metadata)
+  CGImageDestinationFinalize(destination)
+  
+  completionHanlder(metadata, destinationData as Data)
 }
-
