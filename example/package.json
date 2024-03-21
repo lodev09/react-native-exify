@@ -4,11 +4,11 @@
   "private": true,
   "scripts": {
     "start": "expo start",
+    "ios": "expo run:ios",
     "android": "expo run:android",
     "setup": "npx expo prebuild",
     "clean": "yarn setup --clean",
-    "doctor": "npx expo-doctor",
-    "ios": "expo run:ios"
+    "doctor": "npx expo-doctor"
   },
   "dependencies": {
     "expo": "~50.0.13",
