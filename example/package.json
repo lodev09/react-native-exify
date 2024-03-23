@@ -11,13 +11,13 @@
     "doctor": "npx expo-doctor"
   },
   "dependencies": {
-    "expo": "~50.0.13",
+    "expo": "~50.0.14",
     "expo-image": "~1.10.6",
     "expo-image-picker": "~14.7.1",
     "expo-media-library": "~15.9.1",
     "expo-status-bar": "~1.11.1",
     "react": "18.2.0",
-    "react-native": "0.73.5",
+    "react-native": "0.73.6",
     "react-native-vision-camera": "^3.9.1"
   },
   "devDependencies": {
