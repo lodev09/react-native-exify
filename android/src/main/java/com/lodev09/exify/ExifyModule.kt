@@ -1,9 +1,9 @@
-package com.exify
+package com.lodev09.exify
 
 import android.content.Context
 import android.net.Uri
 import androidx.exifinterface.media.ExifInterface
-import com.exify.ExifyUtils.formatTags
+import com.lodev09.exify.ExifyUtils.formatTags
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
