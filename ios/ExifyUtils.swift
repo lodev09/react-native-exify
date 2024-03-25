@@ -56,7 +56,10 @@ func getExifTags(from metadata: NSDictionary) -> [String: Any] {
   // Include tags from formats
   addTagEntries(from: kCGImagePropertyTIFFDictionary, metadata: metadata, to: tags)
   addTagEntries(from: kCGImagePropertyPNGDictionary, metadata: metadata, to: tags)
-  addTagEntries(from: kCGImagePropertyHEICSDictionary, metadata: metadata, to: tags)
+  
+  if #available(iOS 13.0, *) {
+    addTagEntries(from: kCGImagePropertyHEICSDictionary, metadata: metadata, to: tags)
+  }
 
   return tags as? [String: Any] ?? [:]
 }
