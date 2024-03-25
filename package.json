@@ -130,6 +130,7 @@
   },
   "eslintConfig": {
     "root": true,
+    "ignorePatterns": ["lib"],
     "extends": [
       "plugin:@typescript-eslint/recommended",
       "eslint:recommended",
