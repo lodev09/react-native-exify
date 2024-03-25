@@ -1,6 +1,6 @@
 {
   "name": "@lodev09/react-native-exify",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Read and write exif data into an image 🏷️",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
