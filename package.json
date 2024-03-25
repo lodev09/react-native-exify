@@ -1,6 +1,6 @@
 {
   "name": "@lodev09/react-native-exify",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Read and write exif data into an image 🏷️",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -130,7 +130,9 @@
   },
   "eslintConfig": {
     "root": true,
-    "ignorePatterns": ["lib"],
+    "ignorePatterns": [
+      "lib"
+    ],
     "extends": [
       "plugin:@typescript-eslint/recommended",
       "eslint:recommended",
