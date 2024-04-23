@@ -46,7 +46,7 @@ const result = await writeAsync(uri, newTags)
 console.log(result.tags)
 ```
 
-> **Note**:
+> [!NOTE]
 > On IOS, writing exif into an Asset file will duplicate the image. IOS does not allow writing exif into an Asset file directly.
 > If you're getting the photo from a [camera](https://github.com/mrousavy/react-native-vision-camera/), write it into the output file first before saving to the Asset library!
 
