@@ -7340,7 +7340,7 @@ __metadata:
     expo-status-bar: "npm:~1.11.1"
     react: "npm:18.2.0"
     react-native: "npm:0.73.6"
-    react-native-vision-camera: "npm:^3.9.1"
+    react-native-vision-camera: "npm:^4.0.1"
   languageName: unknown
   linkType: soft
 
@@ -12776,17 +12776,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-vision-camera@npm:^3.9.1":
-  version: 3.9.1
-  resolution: "react-native-vision-camera@npm:3.9.1"
+"react-native-vision-camera@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "react-native-vision-camera@npm:4.0.1"
   peerDependencies:
+    "@shopify/react-native-skia": "*"
     react: "*"
     react-native: "*"
+    react-native-reanimated: "*"
     react-native-worklets-core: "*"
   peerDependenciesMeta:
+    "@shopify/react-native-skia":
+      optional: true
+    react-native-reanimated:
+      optional: true
     react-native-worklets-core:
       optional: true
-  checksum: 10/042de4ff04256497192470170d23b00e8f992eaa1f68541d4c1a3531d56ddf33ce1ec8a4489f6c3db2a96bb32338054e297af2e631ad0ae660f009f92ee6459f
+  checksum: 10/7b5fd90a0a192f17a4662b0eb2488ee7595154d6e5bc74e8e281bd40a608b2b8949a4290a046511457097f95262098424086920c297ea35662dbf44d0e4a91f6
   languageName: node
   linkType: hard
 
