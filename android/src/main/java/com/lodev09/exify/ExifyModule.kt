@@ -51,14 +51,18 @@ class ExifyModule(reactContext: ReactApplicationContext) :
       context.contentResolver.openFileDescriptor(photoUri, "rw", null)?.use { parcelDescriptor ->
         val exif = ExifInterface(parcelDescriptor.fileDescriptor)
 
-        for ((_, tag) in EXIFY_TAGS) {
+        for ((valType, tag) in EXIFY_TAGS) {
           if (!tags.hasKey(tag)) continue
 
           val type = tags.getType(tag)
 
           when (type) {
             ReadableType.Boolean -> exif.setAttribute(tag, tags.getBoolean(tag).toString())
-            ReadableType.Number -> exif.setAttribute(tag, tags.getDouble(tag).toBigDecimal().toPlainString())
+            ReadableType.Number ->
+              when (valType) {
+                "double" -> exif.setAttribute(tag, tags.getDouble(tag).toBigDecimal().toPlainString())
+                else -> exif.setAttribute(tag, tags.getDouble(tag).toInt().toString())
+              }
             ReadableType.String -> exif.setAttribute(tag, tags.getString(tag))
             ReadableType.Array -> exif.setAttribute(tag, tags.getArray(tag).toString())
             else -> exif.setAttribute(tag, tags.getString(tag))
