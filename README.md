@@ -1,7 +1,7 @@
 # React Native Exify
 
 [![CI](https://github.com/lodev09/react-native-exify/actions/workflows/ci.yml/badge.svg)](https://github.com/lodev09/react-native-exify/actions/workflows/ci.yml)
-![GitHub Release](https://img.shields.io/github/v/release/lodev09/react-native-exify)
+[![Maintainability](https://api.codeclimate.com/v1/badges/d15705025ef5d25f794f/maintainability)](https://codeclimate.com/github/lodev09/react-native-exify/maintainability)
 ![NPM Downloads](https://img.shields.io/npm/dw/%40lodev09%2Freact-native-exify)
 
 A simple library to read and write image Exif metadata in React Native. Inspired from [this thread](https://github.com/mrousavy/react-native-vision-camera/issues/780).
