@@ -63,7 +63,7 @@ export interface ExifTags {
   LightSource?: number
   UserComment?: string
   GainControl?: number
-  ISOSpeedRatings?: number[]
+  ISOSpeedRatings?: string
   FocalPlaneResolutionUnit?: number
   FocalPlaneXResolution?: number
   YCbCrCoefficients?: number
