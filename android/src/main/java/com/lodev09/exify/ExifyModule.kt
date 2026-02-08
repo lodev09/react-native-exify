@@ -7,6 +7,7 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.ReadableType
+import com.facebook.react.util.RNLog
 import com.lodev09.exify.ExifyUtils.formatTags
 import java.io.IOException
 
@@ -22,22 +23,35 @@ class ExifyModule(
     promise: Promise,
   ) {
     val photoUri = Uri.parse(uri)
+    val scheme = photoUri.scheme
+
+    if (scheme == null) {
+      RNLog.w(context, "Exify: Invalid URI: $uri")
+      promise.reject(ERROR_TAG, "Invalid URI: $uri")
+      return
+    }
 
     try {
       val inputStream =
-        if (photoUri.scheme == "http" || photoUri.scheme == "https") {
+        if (scheme == "http" || scheme == "https") {
           java.net.URL(uri).openStream()
         } else {
           context.contentResolver.openInputStream(photoUri)
         }
 
-      inputStream?.use {
+      if (inputStream == null) {
+        RNLog.w(context, "Exify: Could not open URI: $uri")
+        promise.reject(ERROR_TAG, "Could not open URI: $uri")
+        return
+      }
+
+      inputStream.use {
         val tags = formatTags(ExifInterface(it))
         promise.resolve(tags)
       }
     } catch (e: Exception) {
-      promise.resolve(null)
-      e.printStackTrace()
+      RNLog.w(context, "Exify: ${e.message}")
+      promise.reject(ERROR_TAG, e.message, e)
     }
   }
 

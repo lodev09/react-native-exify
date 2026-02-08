@@ -190,7 +190,8 @@ static NSDictionary *updateMetadata(NSURL *url, NSDictionary *tags) {
     NSString *assetId = [uri substringFromIndex:5];
     PHAsset *asset = getAssetById(assetId);
     if (!asset) {
-      resolve(nil);
+      RCTLogWarn(@"Exify: Could not retrieve asset");
+      reject(@"Error", @"Could not retrieve asset", nil);
       return;
     }
 
@@ -202,11 +203,48 @@ static NSDictionary *updateMetadata(NSURL *url, NSDictionary *tags) {
                                completionHandler:^(
                                    PHContentEditingInput *contentInput,
                                    NSDictionary *info) {
-                                 resolve(readExifTags(
-                                     contentInput.fullSizeImageURL));
+                                 if (!contentInput ||
+                                     !contentInput.fullSizeImageURL) {
+                                   RCTLogWarn(@"Exify: Could not read asset "
+                                               "content");
+                                   reject(@"Error",
+                                          @"Could not read asset content", nil);
+                                   return;
+                                 }
+
+                                 NSDictionary *tags = readExifTags(
+                                     contentInput.fullSizeImageURL);
+                                 if (!tags) {
+                                   RCTLogWarn(@"Exify: Could not read metadata "
+                                               "from asset");
+                                   reject(@"Error",
+                                          @"Could not read metadata from asset",
+                                          nil);
+                                   return;
+                                 }
+
+                                 resolve(tags);
                                }];
   } else {
-    resolve(readExifTags([NSURL URLWithString:uri]));
+    NSURL *url = [NSURL URLWithString:uri];
+    if (!url) {
+      RCTLogWarn(@"Exify: Invalid URI: %@", uri);
+      reject(@"Error", [NSString stringWithFormat:@"Invalid URI: %@", uri],
+             nil);
+      return;
+    }
+
+    NSDictionary *tags = readExifTags(url);
+    if (!tags) {
+      RCTLogWarn(@"Exify: Could not read metadata from: %@", uri);
+      reject(
+          @"Error",
+          [NSString stringWithFormat:@"Could not read metadata from: %@", uri],
+          nil);
+      return;
+    }
+
+    resolve(tags);
   }
 }
 

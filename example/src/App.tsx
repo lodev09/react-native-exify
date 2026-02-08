@@ -105,7 +105,7 @@ export default function App() {
     if (!url) return;
 
     console.log('openUrl:', url);
-    setPreview(url);
+    // setPreview(url);
     await readExif(url);
   };
 
