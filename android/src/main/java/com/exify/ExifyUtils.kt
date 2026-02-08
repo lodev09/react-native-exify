@@ -1,9 +1,8 @@
-package com.lodev09.exify
+package com.exify
 
 import androidx.exifinterface.media.ExifInterface
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableMap
-import java.io.InputStream
 
 object ExifyUtils {
   @JvmStatic
@@ -29,11 +28,11 @@ object ExifyUtils {
       }
     }
 
-    // GPS
+    // GPS — return absolute values (sign is in LatitudeRef/LongitudeRef)
     exif.latLong?.let {
-      tags.putDouble(ExifInterface.TAG_GPS_ALTITUDE, exif.getAltitude(0.0))
-      tags.putDouble(ExifInterface.TAG_GPS_LATITUDE, it[0])
-      tags.putDouble(ExifInterface.TAG_GPS_LONGITUDE, it[1])
+      tags.putDouble(ExifInterface.TAG_GPS_ALTITUDE, Math.abs(exif.getAltitude(0.0)))
+      tags.putDouble(ExifInterface.TAG_GPS_LATITUDE, Math.abs(it[0]))
+      tags.putDouble(ExifInterface.TAG_GPS_LONGITUDE, Math.abs(it[1]))
     }
 
     return tags

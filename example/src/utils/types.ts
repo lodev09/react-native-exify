@@ -1,2 +1,2 @@
 // lng, lat
-export type Position = [number, number]
+export type Position = [number, number];

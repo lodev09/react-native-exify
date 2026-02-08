@@ -1,16 +1,16 @@
 # React Native Exify
 
 [![CI](https://github.com/lodev09/react-native-exify/actions/workflows/ci.yml/badge.svg)](https://github.com/lodev09/react-native-exify/actions/workflows/ci.yml)
-[![Maintainability](https://api.codeclimate.com/v1/badges/d15705025ef5d25f794f/maintainability)](https://codeclimate.com/github/lodev09/react-native-exify/maintainability)
 ![NPM Downloads](https://img.shields.io/npm/dw/%40lodev09%2Freact-native-exify)
 
 A simple library to read and write image Exif metadata in React Native. Inspired from [this thread](https://github.com/mrousavy/react-native-vision-camera/issues/780).
 
 ## Features
-* ✅ Read Exif data from an image
-* ✅ Write Exif data into an image
-* ✅ Tags are typed and standardized
-* ✅ Works with Expo and bare React Native projects
+* Read Exif data from an image
+* Write Exif data into an image
+* Tags are typed and standardized
+* Works with Expo and bare React Native projects
+* Supports New Architecture (Turbo Module)
 
 ## Installation
 
@@ -21,20 +21,21 @@ yarn add @lodev09/react-native-exify
 ## Usage
 
 ```ts
-import { writeAsync, readAsync, ExifTags } from '@lodev09/react-native-exify';
+import * as Exify from '@lodev09/react-native-exify';
 ```
 
-### 🧐 Reading Exif
+### Reading Exif
 ```ts
-// ...
 const uri = 'file://path/to/image.jpg'
 
-const tags = await readAsync(uri)
+const tags = await Exify.read(uri)
 console.log(tags)
 ```
 
-### ✍️ Writing Exif
+### Writing Exif
 ```ts
+import type { ExifTags } from '@lodev09/react-native-exify';
+
 const uri = 'file://path/to/image.jpg'
 const newTags: ExifTags = {
   GPSLatitude: 69.69,
@@ -42,13 +43,12 @@ const newTags: ExifTags = {
   UserComment: 'Someone wrote GPS here!',
 }
 
-const result = await writeAsync(uri, newTags)
+const result = await Exify.write(uri, newTags)
 console.log(result.tags)
 ```
 
-> [!NOTE]
-> On IOS, writing exif into an Asset file will duplicate the image. IOS does not allow writing exif into an Asset file directly.
-> If you're getting the photo from a [camera](https://github.com/mrousavy/react-native-vision-camera/), write it into the output file first before saving to the Asset library!
+> **Note:** On iOS, writing exif into an Asset file will duplicate the image. iOS does not allow writing exif into an Asset file directly.
+> If you're getting the photo from a [camera](https://docs.expo.dev/versions/latest/sdk/camera/), write it into the output file first before saving to the Asset library!
 
 See [example](example) for more detailed usage.
 
@@ -56,3 +56,7 @@ See [example](example) for more detailed usage.
 Contributions are welcome!
 
 See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
+
+## License
+
+MIT

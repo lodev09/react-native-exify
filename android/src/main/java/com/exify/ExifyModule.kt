@@ -1,14 +1,11 @@
-package com.lodev09.exify
+package com.exify
 
-import android.content.Context
 import android.net.Uri
 import androidx.exifinterface.media.ExifInterface
-import com.lodev09.exify.ExifyUtils.formatTags
+import com.exify.ExifyUtils.formatTags
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.bridge.ReactContextBaseJavaModule
-import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.ReadableType
 import java.io.IOException
@@ -16,23 +13,16 @@ import java.io.IOException
 private const val ERROR_TAG = "E_EXIFY_ERROR"
 
 class ExifyModule(reactContext: ReactApplicationContext) :
-  ReactContextBaseJavaModule(reactContext) {
+  NativeExifySpec(reactContext) {
 
-  private val context: Context = reactContext
+  private val context = reactContext
 
-  override fun getName(): String {
-    return NAME
-  }
-
-  @ReactMethod
-  fun readAsync(uri: String, promise: Promise) {
+  override fun read(uri: String, promise: Promise) {
     val photoUri = Uri.parse(uri)
 
     try {
       context.contentResolver.openInputStream(photoUri)?.use {
         val tags = formatTags(ExifInterface(it))
-        it.close()
-
         promise.resolve(tags)
       }
     } catch (e: Exception) {
@@ -41,9 +31,8 @@ class ExifyModule(reactContext: ReactApplicationContext) :
     }
   }
 
-  @ReactMethod
   @Throws(IOException::class)
-  fun writeAsync(uri: String, tags: ReadableMap, promise: Promise) {
+  override fun write(uri: String, tags: ReadableMap, promise: Promise) {
     val photoUri = Uri.parse(uri)
     val params = Arguments.createMap()
 
@@ -89,7 +78,6 @@ class ExifyModule(reactContext: ReactApplicationContext) :
         exif.saveAttributes()
         promise.resolve(params)
       }
-
     } catch (e: Exception) {
       promise.reject(ERROR_TAG, e.message, e)
       e.printStackTrace()
@@ -97,6 +85,6 @@ class ExifyModule(reactContext: ReactApplicationContext) :
   }
 
   companion object {
-    const val NAME = "Exify"
+    const val NAME = NativeExifySpec.NAME
   }
 }

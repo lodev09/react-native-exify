@@ -1,4 +1,5 @@
-package com.lodev09.exify
+package com.exify
+
 import androidx.exifinterface.media.ExifInterface
 
 /**

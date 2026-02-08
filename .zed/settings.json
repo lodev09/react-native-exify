@@ -1,0 +1,7 @@
+{
+  "file_scan_exclusions": [
+    "**/.git",
+    "**/node_modules",
+    "**/.DS_Store"
+  ]
+}
