@@ -44,7 +44,14 @@ export default function App() {
       GPSLongitude: lng,
       GPSTimeStamp: '10:10:10',
       GPSDateStamp: '2024:10:10',
+      GPSDOP: 5.0,
+      GPSImgDirection: 180.5,
+      GPSImgDirectionRef: 'T',
       UserComment: 'Exif updated via @lodev09/react-native-exify',
+      Make: 'Exify',
+      Model: 'ExifyCamera',
+      Software: 'react-native-exify',
+      DateTime: '2024:10:10 10:10:10',
     };
 
     console.log('writeExif:', json(tags));
