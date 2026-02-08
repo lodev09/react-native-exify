@@ -139,6 +139,7 @@ export interface ExifTags {
   SubjectDistanceRange?: number;
   XResolution?: number;
   Software?: string;
+  HostComputer?: string;
   [key: string]: unknown;
 }
 

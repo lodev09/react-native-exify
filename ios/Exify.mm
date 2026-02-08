@@ -1,5 +1,18 @@
 #import "Exify.h"
 
+static NSSet *tiffKeys;
+
+__attribute__((constructor)) static void initTiffKeys(void) {
+  tiffKeys = [NSSet setWithObjects:@"Make", @"Model", @"Software", @"DateTime",
+                                   @"Artist", @"Copyright", @"ImageDescription",
+                                   @"Orientation", @"XResolution",
+                                   @"YResolution", @"ResolutionUnit",
+                                   @"Compression", @"PhotometricInterpretation",
+                                   @"TransferFunction", @"WhitePoint",
+                                   @"PrimaryChromaticities", @"HostComputer",
+                                   nil];
+}
+
 #pragma mark - Helpers
 
 static PHAsset *getAssetById(NSString *assetId) {
@@ -95,58 +108,50 @@ static NSDictionary *updateMetadata(NSURL *url, NSDictionary *tags) {
                                                props]
             : [NSMutableDictionary new];
 
-  // Merge into Exif dict (filter out GPS-prefixed keys)
+  // Route tags into the correct sub-dictionaries
   NSMutableDictionary *exifDict = [NSMutableDictionary
       dictionaryWithDictionary:metadata[(__bridge NSString *)
                                             kCGImagePropertyExifDictionary]
                                    ?: @{}];
-  for (NSString *key in tags) {
-    if (![key hasPrefix:@"GPS"]) {
-      exifDict[key] = tags[key];
-    }
-  }
-  metadata[(__bridge NSString *)kCGImagePropertyExifDictionary] = exifDict;
-
-  // Handle GPS tags
+  NSMutableDictionary *tiffDict = [NSMutableDictionary
+      dictionaryWithDictionary:metadata[(__bridge NSString *)
+                                            kCGImagePropertyTIFFDictionary]
+                                   ?: @{}];
   NSMutableDictionary *gpsDict = [NSMutableDictionary
       dictionaryWithDictionary:metadata[(__bridge NSString *)
                                             kCGImagePropertyGPSDictionary]
                                    ?: @{}];
 
-  NSNumber *latitude = tags[@"GPSLatitude"];
-  if (latitude) {
-    double lat = latitude.doubleValue;
-    gpsDict[(__bridge NSString *)kCGImagePropertyGPSLatitude] = @(fabs(lat));
-    gpsDict[(__bridge NSString *)kCGImagePropertyGPSLatitudeRef] =
-        lat >= 0 ? @"N" : @"S";
+  for (NSString *key in tags) {
+    id value = tags[key];
+
+    if ([key isEqualToString:@"GPSLatitude"]) {
+      double lat = [value doubleValue];
+      gpsDict[(__bridge NSString *)kCGImagePropertyGPSLatitude] = @(fabs(lat));
+      gpsDict[(__bridge NSString *)kCGImagePropertyGPSLatitudeRef] =
+          lat >= 0 ? @"N" : @"S";
+    } else if ([key isEqualToString:@"GPSLongitude"]) {
+      double lng = [value doubleValue];
+      gpsDict[(__bridge NSString *)kCGImagePropertyGPSLongitude] =
+          @(fabs(lng));
+      gpsDict[(__bridge NSString *)kCGImagePropertyGPSLongitudeRef] =
+          lng >= 0 ? @"E" : @"W";
+    } else if ([key isEqualToString:@"GPSAltitude"]) {
+      double alt = [value doubleValue];
+      gpsDict[(__bridge NSString *)kCGImagePropertyGPSAltitude] = @(fabs(alt));
+      gpsDict[(__bridge NSString *)kCGImagePropertyGPSAltitudeRef] =
+          @(alt >= 0 ? 0 : 1);
+    } else if ([key hasPrefix:@"GPS"]) {
+      gpsDict[[key substringFromIndex:3]] = value;
+    } else if ([tiffKeys containsObject:key]) {
+      tiffDict[key] = value;
+    } else {
+      exifDict[key] = value;
+    }
   }
 
-  NSNumber *longitude = tags[@"GPSLongitude"];
-  if (longitude) {
-    double lng = longitude.doubleValue;
-    gpsDict[(__bridge NSString *)kCGImagePropertyGPSLongitude] = @(fabs(lng));
-    gpsDict[(__bridge NSString *)kCGImagePropertyGPSLongitudeRef] =
-        lng >= 0 ? @"E" : @"W";
-  }
-
-  NSNumber *altitude = tags[@"GPSAltitude"];
-  if (altitude) {
-    double alt = altitude.doubleValue;
-    gpsDict[(__bridge NSString *)kCGImagePropertyGPSAltitude] = @(fabs(alt));
-    gpsDict[(__bridge NSString *)kCGImagePropertyGPSAltitudeRef] =
-        @(alt >= 0 ? 0 : 1);
-  }
-
-  NSString *gpsDate = tags[@"GPSDateStamp"];
-  if (gpsDate) {
-    gpsDict[(__bridge NSString *)kCGImagePropertyGPSDateStamp] = gpsDate;
-  }
-
-  NSString *gpsTime = tags[@"GPSTimeStamp"];
-  if (gpsTime) {
-    gpsDict[(__bridge NSString *)kCGImagePropertyGPSTimeStamp] = gpsTime;
-  }
-
+  metadata[(__bridge NSString *)kCGImagePropertyExifDictionary] = exifDict;
+  metadata[(__bridge NSString *)kCGImagePropertyTIFFDictionary] = tiffDict;
   metadata[(__bridge NSString *)kCGImagePropertyGPSDictionary] = gpsDict;
   metadata[(__bridge NSString *)kCGImageDestinationLossyCompressionQuality] =
       @(1);
