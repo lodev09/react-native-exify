@@ -3,9 +3,10 @@
 [![CI](https://github.com/lodev09/react-native-exify/actions/workflows/ci.yml/badge.svg)](https://github.com/lodev09/react-native-exify/actions/workflows/ci.yml)
 ![NPM Downloads](https://img.shields.io/npm/dw/%40lodev09%2Freact-native-exify)
 
-A simple library to read and write image Exif metadata in React Native. Inspired from [this thread](https://github.com/mrousavy/react-native-vision-camera/issues/780).
+A simple library to read and write image Exif metadata for your React Native Apps. 🏷️
 
 ## Features
+
 * Read Exif data from an image
 * Write Exif data into an image
 * Tags are typed and standardized
@@ -25,6 +26,7 @@ import * as Exify from '@lodev09/react-native-exify';
 ```
 
 ### Reading Exif
+
 ```ts
 const uri = 'file://path/to/image.jpg'
 
@@ -33,6 +35,7 @@ console.log(tags)
 ```
 
 ### Writing Exif
+
 ```ts
 import type { ExifTags } from '@lodev09/react-native-exify';
 
@@ -53,10 +56,13 @@ console.log(result.tags)
 See [example](example) for more detailed usage.
 
 ## Contributing
-Contributions are welcome!
 
 See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
 
 ## License
 
-MIT
+[MIT](LICENSE)
+
+---
+
+Made with ❤️ by [@lodev09](http://linkedin.com/in/lodev09/)

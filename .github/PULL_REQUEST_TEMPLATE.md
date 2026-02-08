@@ -13,13 +13,8 @@
 
 <!-- How did you test these changes? -->
 
-## Screenshots / Videos
-
-<!-- Add screenshots or videos if applicable -->
-
 ## Checklist
 
 - [ ] I tested on iOS
 - [ ] I tested on Android
-- [ ] I tested on Web
 - [ ] I updated the documentation (if needed)
