@@ -21,24 +21,26 @@ yarn add @lodev09/react-native-exify
 
 ## Usage
 
-```ts
+```tsx
 import * as Exify from '@lodev09/react-native-exify';
 ```
 
-### Reading Exif
+### Reading Exif 🔍
 
-```ts
+```tsx
 const uri = 'file://path/to/image.jpg'
 
 const tags = await Exify.read(uri)
 console.log(tags)
 ```
 
-> **Note:** On Android 10+, GPS data is redacted from `content://` URIs by default. The library automatically requests `ACCESS_MEDIA_LOCATION` at runtime to access unredacted location data. Your app must have media read access (`READ_MEDIA_IMAGES` or `READ_EXTERNAL_STORAGE`) granted first. If you're already using a library like [`expo-media-library`](https://docs.expo.dev/versions/latest/sdk/media-library/) that grants `ACCESS_MEDIA_LOCATION`, exify will use the existing grant.
+> [!NOTE]
+> On Android 10+, GPS data is redacted from `content://` URIs by default. The library automatically requests `ACCESS_MEDIA_LOCATION` at runtime to access unredacted location data. Your app must have media read access (`READ_MEDIA_IMAGES` or `READ_EXTERNAL_STORAGE`) granted first.
+> If you're already using a library like [`expo-media-library`](https://docs.expo.dev/versions/latest/sdk/media-library/) that grants `ACCESS_MEDIA_LOCATION`, exify will use the existing grant.
 
-### Writing Exif
+### Writing Exif ✍️
 
-```ts
+```tsx
 import type { ExifTags } from '@lodev09/react-native-exify';
 
 const uri = 'file://path/to/image.jpg'
@@ -52,8 +54,11 @@ const result = await Exify.write(uri, newTags)
 console.log(result.tags)
 ```
 
-> **Note:** On iOS, writing exif into an Asset file will duplicate the image. iOS does not allow writing exif into an Asset file directly.
+> [!NOTE]
+> On iOS, writing exif into an Asset file will duplicate the image. iOS does not allow writing exif into an Asset file directly.
 > If you're getting the photo from a [camera](https://docs.expo.dev/versions/latest/sdk/camera/), write it into the output file first before saving to the Asset library!
+
+## Example
 
 See [example](example) for more detailed usage.
 
