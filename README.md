@@ -34,6 +34,9 @@ const tags = await Exify.read(uri)
 console.log(tags)
 ```
 
+> [!IMPORTANT]
+> The `uri` must include a scheme (e.g. `file://`, `ph://`, `content://`). Bare file paths like `/var/mobile/.../image.jpg` are not supported and will throw an error.
+
 > [!NOTE]
 > On Android 10+, GPS data is redacted from `content://` URIs by default. The library automatically requests `ACCESS_MEDIA_LOCATION` at runtime to access unredacted location data. Your app must have media read access (`READ_MEDIA_IMAGES` or `READ_EXTERNAL_STORAGE`) granted first.
 > If you're already using a library like [`expo-media-library`](https://docs.expo.dev/versions/latest/sdk/media-library/) that grants `ACCESS_MEDIA_LOCATION`, exify will use the existing grant.

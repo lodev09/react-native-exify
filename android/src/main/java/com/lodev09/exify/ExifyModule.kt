@@ -34,8 +34,8 @@ class ExifyModule(
     val scheme = photoUri.scheme
 
     if (scheme == null) {
-      RNLog.w(context, "Exify: Invalid URI: $uri")
-      promise.reject(ERROR_TAG, "Invalid URI: $uri")
+      RNLog.w(context, "Exify: URI must include a scheme (e.g. file://): $uri")
+      promise.reject(ERROR_TAG, "URI must include a scheme (e.g. file://): $uri")
       return
     }
 
@@ -108,6 +108,13 @@ class ExifyModule(
     promise: Promise,
   ) {
     val photoUri = Uri.parse(uri)
+
+    if (photoUri.scheme == null) {
+      RNLog.w(context, "Exify: URI must include a scheme (e.g. file://): $uri")
+      promise.reject(ERROR_TAG, "URI must include a scheme (e.g. file://): $uri")
+      return
+    }
+
     val params = Arguments.createMap()
 
     try {
