@@ -1,17 +1,17 @@
 {
   "expo": {
-    "name": "ExifyExample",
-    "slug": "ExifyExample",
+    "name": "Exify Example",
+    "slug": "react-native-exify-example",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#000000"
     },
-    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.lodev09.exify"
@@ -19,8 +19,9 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#000000"
       },
+      "edgeToEdgeEnabled": true,
       "package": "com.lodev09.exify"
     },
     "web": {
@@ -28,20 +29,17 @@
     },
     "plugins": [
       [
-        "react-native-vision-camera",
+        "expo-camera",
         {
-          "cameraPermissionText": "$(PRODUCT_NAME) needs access to your Camera.",
-
-          // optionally, if you want to record audio:
-          "enableMicrophonePermission": true,
-          "microphonePermissionText": "$(PRODUCT_NAME) needs access to your Microphone."
+          "cameraPermission": "Allow Exify Example to access your camera",
+          "microphonePermission": "Allow Exify Example to access your microphone"
         }
       ],
       [
         "expo-media-library",
         {
-          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
-          "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
+          "photosPermission": "Allow Exify Example to access your photos",
+          "savePhotosPermission": "Allow Exify Example to save photos",
           "isAccessMediaLocationEnabled": true
         }
       ]

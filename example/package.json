@@ -1,33 +1,27 @@
 {
-  "name": "exify-example",
+  "name": "react-native-exify-example",
   "version": "1.0.0",
-  "private": true,
+  "main": "index.js",
   "scripts": {
-    "start": "expo start",
-    "ios": "expo run:ios",
+    "start": "expo start --dev-client",
+    "prebuild": "expo prebuild",
     "android": "expo run:android",
-    "setup": "npx expo prebuild",
-    "clean": "yarn setup --clean",
-    "doctor": "npx expo-doctor"
+    "ios": "expo run:ios"
   },
   "dependencies": {
-    "expo": "~50.0.17",
-    "expo-image": "~1.10.6",
-    "expo-image-picker": "~14.7.1",
-    "expo-media-library": "~15.9.2",
-    "expo-status-bar": "~1.11.1",
-    "react": "18.2.0",
-    "react-native": "0.73.6",
-    "react-native-vision-camera": "^4.0.1"
+    "expo": "~54.0.33",
+    "expo-camera": "~16.1.6",
+    "expo-image": "~2.3.0",
+    "expo-image-picker": "~16.1.4",
+    "expo-media-library": "~17.1.4",
+    "expo-status-bar": "~3.0.9",
+    "react": "19.1.0",
+    "react-native": "0.81.5"
   },
+  "private": true,
   "devDependencies": {
-    "@babel/core": "^7.20.0",
-    "@babel/preset-env": "^7.20.0",
-    "@babel/runtime": "^7.20.0",
-    "@react-native/metro-config": "^0.73.5",
-    "babel-plugin-module-resolver": "^5.0.0"
-  },
-  "engines": {
-    "node": ">=18"
+    "expo-dev-client": "~6.0.20",
+    "react-native-builder-bob": "^0.40.17",
+    "react-native-monorepo-config": "^0.3.1"
   }
 }

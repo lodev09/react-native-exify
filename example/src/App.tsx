@@ -1,211 +1,177 @@
-import React, { useEffect, useRef, useState } from 'react'
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  type TextStyle,
-  type ViewStyle,
-} from 'react-native'
-import { StatusBar } from 'expo-status-bar'
-import * as Exify from '@lodev09/react-native-exify'
-import * as ImagePicker from 'expo-image-picker'
-import { Image, type ImageStyle } from 'expo-image'
-import {
-  Camera,
-  useCameraDevice,
-  useCameraPermission,
-  useMicrophonePermission,
-} from 'react-native-vision-camera'
-import * as MediaLibrary from 'expo-media-library'
+import { useEffect, useRef, useState } from 'react';
+import { StyleSheet, View, Pressable, Platform, Linking } from 'react-native';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
+import * as MediaLibrary from 'expo-media-library';
+import { Image } from 'expo-image';
+import * as Exify from '@lodev09/react-native-exify';
+import type { ExifTags } from '@lodev09/react-native-exify';
 
-import { json, mockPosition } from './utils'
+import { mockPosition, json } from './utils';
 
-const SPACE = 16
+export default function App() {
+  const cameraRef = useRef<CameraView>(null);
+  const [preview, setPreview] = useState<string>();
 
-const CAPTURE_BUTTON_SIZE = 64
-const CAPTURE_WRAPPER_SIZE = CAPTURE_BUTTON_SIZE + SPACE
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+  const [mediaPermission, requestMediaPermission] =
+    MediaLibrary.usePermissions();
 
-const App = () => {
-  const camera = useRef<Camera>(null)
-
-  const [previewUri, setPreviewUri] = useState<string | undefined>()
-
-  const cameraPermission = useCameraPermission()
-  const microphonePermission = useMicrophonePermission()
-  const [mediaLibraryPermission, requestMediaLibraryPermission] = MediaLibrary.usePermissions()
-
-  const device = useCameraDevice('back')
+  useEffect(() => {
+    requestCameraPermission();
+    requestMediaPermission();
+  }, [requestCameraPermission, requestMediaPermission]);
 
   const readExif = async (uri: string) => {
-    const result = await Exify.readAsync(uri)
-    console.log(json(result))
-  }
+    const tags = await Exify.read(uri);
+    console.log('readExif:', json(tags));
+    return tags;
+  };
 
   const writeExif = async (uri: string) => {
-    const position = mockPosition()
-
-    // Add additional exif e.g. GPS
-    const result = await Exify.writeAsync(uri, {
-      GPSLatitude: position[1],
-      GPSLongitude: position[0],
+    const [lng, lat] = mockPosition();
+    const tags: ExifTags = {
+      GPSLatitude: lat,
+      GPSLongitude: lng,
       GPSTimeStamp: '10:10:10',
       GPSDateStamp: '2024:10:10',
-      UserComment: 'Exif updated via react-native-exify',
-    })
+      UserComment: 'Exif updated via @lodev09/react-native-exify',
+    };
 
-    console.log(json(result))
-  }
+    console.log('writeExif:', json(tags));
+    const result = await Exify.write(uri, tags);
+    console.log('writeExif result:', json(result));
+
+    return result;
+  };
 
   const takePhoto = async () => {
-    try {
-      const photo = await camera.current?.takePhoto()
-      if (photo) {
-        const photoUri = `file://${photo.path}`
+    if (!cameraRef.current) return;
 
-        // Write asset to the photo
-        await writeExif(photoUri)
+    const photo = await cameraRef.current.takePictureAsync({ exif: false });
+    if (!photo) return;
 
-        const permission = await MediaLibrary.requestPermissionsAsync()
-        if (permission.granted) {
-          const asset = await MediaLibrary.createAssetAsync(photoUri)
-          setPreviewUri(asset.uri)
-        }
-      }
-    } catch (e) {
-      console.error(e)
-    }
-  }
+    console.log('takePhoto:', photo.uri);
+
+    const result = await writeExif(photo.uri);
+    if (!result) return;
+
+    const asset = await MediaLibrary.createAssetAsync(result.uri);
+    console.log('saved asset:', asset.uri);
+
+    setPreview(asset.uri);
+    await readExif(asset.uri);
+  };
 
   const openLibrary = async () => {
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.All,
-        allowsMultipleSelection: true,
-        selectionLimit: 1,
-      })
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 1,
+    });
 
-      if (!result.canceled) {
-        const asset = result.assets[0]
-        if (asset?.assetId) {
-          // Get asset uri first to get full exif information
-          const assetInfo = await MediaLibrary.getAssetInfoAsync(asset.assetId)
+    if (result.canceled) return;
 
-          await readExif(assetInfo.uri)
-          // await writeExif(assetInfo.uri)
-        } else if (asset?.uri) {
-          // Read from picker temp file
-          // less exif when using expo-media-library
-          await readExif(asset.uri)
-        } else {
-          console.warn('URI not found!')
-        }
-      }
-    } catch (e) {
-      console.error(e)
-    }
-  }
+    const asset = result.assets[0];
+    if (!asset) return;
 
-  useEffect(() => {
-    ;(async () => {
-      await cameraPermission.requestPermission()
-      await microphonePermission.requestPermission()
-      await requestMediaLibraryPermission()
-    })()
-  }, [])
+    const uri =
+      Platform.OS === 'ios' && asset.assetId
+        ? `ph://${asset.assetId}`
+        : asset.uri;
 
-  useEffect(() => {
-    ;(async () => {
-      if (mediaLibraryPermission?.granted) {
-        const result = await MediaLibrary.getAssetsAsync({ first: 1, mediaType: 'photo' })
-        if (result.assets.length) {
-          setPreviewUri(result.assets[0]?.uri)
-        }
-      }
-    })()
-  }, [mediaLibraryPermission])
+    console.log('openLibrary:', uri);
+    setPreview(asset.uri);
+    await readExif(uri);
+  };
 
-  if (!device) {
+  if (!cameraPermission?.granted || !mediaPermission?.granted) {
     return (
-      <View style={$container}>
-        <Text style={$text}>Only available on your fully paid iPhone or Android!</Text>
+      <View style={styles.container}>
+        <Pressable
+          onPress={() => {
+            if (cameraPermission?.canAskAgain) {
+              requestCameraPermission();
+            } else {
+              Linking.openSettings();
+            }
+          }}
+        >
+          <Image source={require('../assets/icon.png')} style={styles.icon} />
+        </Pressable>
       </View>
-    )
+    );
   }
 
   return (
-    <View style={$container}>
-      <StatusBar style="light" />
-      <Camera photo ref={camera} style={StyleSheet.absoluteFill} device={device} isActive />
-      {cameraPermission.hasPermission ? (
-        <View style={$controlsContainer}>
-          <TouchableOpacity activeOpacity={0.6} onPress={openLibrary} style={$library}>
-            <Image source={{ uri: previewUri }} style={$image} />
-          </TouchableOpacity>
-          <View style={$captureWrapper}>
-            <TouchableOpacity activeOpacity={0.6} style={$captureButton} onPress={takePhoto} />
-          </View>
-        </View>
-      ) : (
-        <Text style={$text}>⚠️ We need access to your Camera</Text>
-      )}
+    <View style={styles.container}>
+      <CameraView ref={cameraRef} style={styles.camera} facing="back" />
+      <View style={styles.controls}>
+        <Pressable onPress={openLibrary} style={styles.previewButton}>
+          {preview && (
+            <Image source={{ uri: preview }} style={styles.preview} />
+          )}
+        </Pressable>
+        <Pressable onPress={takePhoto} style={styles.captureButton}>
+          <View style={styles.captureInner} />
+        </Pressable>
+        <View style={styles.spacer} />
+      </View>
     </View>
-  )
+  );
 }
 
-const $container: ViewStyle = {
-  flex: 1,
-  backgroundColor: '#0d0e11',
-  alignItems: 'center',
-  justifyContent: 'center',
-}
-
-const $controlsContainer: ViewStyle = {
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-  position: 'absolute',
-  bottom: SPACE * 4,
-  width: '100%',
-}
-
-const $image: ImageStyle = {
-  width: '100%',
-  height: '100%',
-}
-
-const $library: ImageStyle = {
-  position: 'absolute',
-  left: SPACE * 2,
-  width: SPACE * 3,
-  height: SPACE * 3,
-  borderRadius: 4,
-  marginRight: SPACE,
-  borderWidth: 2,
-  borderColor: 'white',
-}
-
-const $captureWrapper: ViewStyle = {
-  alignSelf: 'center',
-  height: CAPTURE_WRAPPER_SIZE,
-  width: CAPTURE_WRAPPER_SIZE,
-  borderRadius: CAPTURE_WRAPPER_SIZE / 2,
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderWidth: 2,
-  borderColor: 'white',
-}
-
-const $captureButton: ViewStyle = {
-  backgroundColor: '#ffffff',
-  height: CAPTURE_BUTTON_SIZE,
-  width: CAPTURE_BUTTON_SIZE,
-  borderRadius: CAPTURE_BUTTON_SIZE / 2,
-}
-
-const $text: TextStyle = {
-  color: '#ffffff',
-  fontWeight: 'bold',
-}
-
-export default App
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#000',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  icon: {
+    width: 80,
+    height: 80,
+  },
+  camera: {
+    flex: 1,
+    width: '100%',
+  },
+  controls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 30,
+    paddingVertical: 20,
+    paddingBottom: 40,
+    backgroundColor: '#000',
+    width: '100%',
+  },
+  previewButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 8,
+    backgroundColor: '#333',
+    overflow: 'hidden',
+  },
+  preview: {
+    width: 50,
+    height: 50,
+  },
+  captureButton: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    borderWidth: 4,
+    borderColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  captureInner: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: '#fff',
+  },
+  spacer: {
+    width: 50,
+  },
+});
