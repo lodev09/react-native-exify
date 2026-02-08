@@ -9,6 +9,7 @@
     "ios": "expo run:ios"
   },
   "dependencies": {
+    "@lodev09/react-native-true-sheet": "^3.8.2",
     "expo": "~54.0.33",
     "expo-camera": "~16.1.6",
     "expo-image": "~2.3.0",

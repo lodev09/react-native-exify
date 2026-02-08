@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, Pressable, Platform, Linking } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Pressable,
+  Platform,
+  Linking,
+  Text,
+} from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
@@ -8,9 +15,11 @@ import * as Exify from '@lodev09/react-native-exify';
 import type { ExifTags } from '@lodev09/react-native-exify';
 
 import { mockPosition, json } from './utils';
+import { PromptSheet, type PromptSheetRef } from './components/PromptSheet';
 
 export default function App() {
   const cameraRef = useRef<CameraView>(null);
+  const promptRef = useRef<PromptSheetRef>(null);
   const [preview, setPreview] = useState<string>();
 
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
@@ -84,6 +93,22 @@ export default function App() {
     await readExif(uri);
   };
 
+  const openUrl = async () => {
+    const defaultUrl =
+      'https://raw.githubusercontent.com/ianare/exif-samples/master/jpg/gps/DSCN0010.jpg';
+
+    const url = await promptRef.current?.prompt(
+      'Enter image URL',
+      defaultUrl,
+      'https://'
+    );
+    if (!url) return;
+
+    console.log('openUrl:', url);
+    setPreview(url);
+    await readExif(url);
+  };
+
   if (!cameraPermission?.granted || !mediaPermission?.granted) {
     return (
       <View style={styles.container}>
@@ -105,6 +130,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       <CameraView ref={cameraRef} style={styles.camera} facing="back" />
+      <PromptSheet ref={promptRef} />
       <View style={styles.controls}>
         <Pressable onPress={openLibrary} style={styles.previewButton}>
           {preview && (
@@ -114,7 +140,9 @@ export default function App() {
         <Pressable onPress={takePhoto} style={styles.captureButton}>
           <View style={styles.captureInner} />
         </Pressable>
-        <View style={styles.spacer} />
+        <Pressable onPress={openUrl} style={styles.urlButton}>
+          <Text style={styles.urlLabel}>URL</Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -171,7 +199,17 @@ const styles = StyleSheet.create({
     borderRadius: 29,
     backgroundColor: '#fff',
   },
-  spacer: {
+  urlButton: {
     width: 50,
+    height: 50,
+    borderRadius: 8,
+    backgroundColor: '#333',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  urlLabel: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
   },
 });
