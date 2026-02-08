@@ -33,7 +33,7 @@ apply plugin: "kotlin-android"
 apply plugin: "com.facebook.react"
 
 android {
-  namespace "com.exify"
+  namespace "com.lodev09.exify"
 
   compileSdkVersion getExtOrDefault("compileSdkVersion")
 

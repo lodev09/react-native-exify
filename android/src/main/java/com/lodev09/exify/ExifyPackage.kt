@@ -1,4 +1,4 @@
-package com.exify
+package com.lodev09.exify
 
 import com.facebook.react.BaseReactPackage
 import com.facebook.react.bridge.NativeModule
