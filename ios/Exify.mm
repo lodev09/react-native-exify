@@ -9,12 +9,11 @@ static PHAsset *getAssetById(NSString *assetId) {
   options.fetchLimit = 1;
 
   PHFetchResult<PHAsset *> *result =
-    [PHAsset fetchAssetsWithLocalIdentifiers:@[assetId] options:options];
+      [PHAsset fetchAssetsWithLocalIdentifiers:@[ assetId ] options:options];
   return result.firstObject;
 }
 
-static void addTagEntries(CFStringRef dictionary,
-                          NSDictionary *metadata,
+static void addTagEntries(CFStringRef dictionary, NSDictionary *metadata,
                           NSMutableDictionary *tags) {
   NSDictionary *entries = metadata[(__bridge NSString *)dictionary];
   if (entries) {
@@ -25,10 +24,12 @@ static void addTagEntries(CFStringRef dictionary,
 static NSDictionary *getExifTags(NSDictionary *metadata) {
   NSMutableDictionary *tags = [NSMutableDictionary new];
 
-  NSString *compressionKey = (__bridge NSString *)kCGImageDestinationLossyCompressionQuality;
+  NSString *compressionKey =
+      (__bridge NSString *)kCGImageDestinationLossyCompressionQuality;
   for (NSString *key in metadata) {
     id value = metadata[key];
-    if (![value isKindOfClass:[NSDictionary class]] && ![key isEqualToString:compressionKey]) {
+    if (![value isKindOfClass:[NSDictionary class]] &&
+        ![key isEqualToString:compressionKey]) {
       tags[key] = value;
     }
   }
@@ -42,7 +43,8 @@ static NSDictionary *getExifTags(NSDictionary *metadata) {
   }
 
   // Prefix GPS keys with "GPS"
-  NSDictionary *gps = metadata[(__bridge NSString *)kCGImagePropertyGPSDictionary];
+  NSDictionary *gps =
+      metadata[(__bridge NSString *)kCGImagePropertyGPSDictionary];
   if (gps) {
     for (NSString *key in gps) {
       tags[[@"GPS" stringByAppendingString:key]] = gps[key];
@@ -53,24 +55,31 @@ static NSDictionary *getExifTags(NSDictionary *metadata) {
 }
 
 static NSDictionary *readExifTags(NSURL *url) {
-  if (!url) return nil;
+  if (!url)
+    return nil;
 
-  CGImageSourceRef source = CGImageSourceCreateWithURL((__bridge CFURLRef)url, nil);
-  if (!source) return nil;
+  CGImageSourceRef source =
+      CGImageSourceCreateWithURL((__bridge CFURLRef)url, nil);
+  if (!source)
+    return nil;
 
   NSDictionary *metadata =
-    (__bridge_transfer NSDictionary *)CGImageSourceCopyPropertiesAtIndex(source, 0, nil);
+      (__bridge_transfer NSDictionary *)CGImageSourceCopyPropertiesAtIndex(
+          source, 0, nil);
   CFRelease(source);
 
-  if (!metadata) return nil;
+  if (!metadata)
+    return nil;
 
   return getExifTags(metadata);
 }
 
 /// Returns @{@"metadata": NSDictionary, @"data": NSData} or nil on failure.
 static NSDictionary *updateMetadata(NSURL *url, NSDictionary *tags) {
-  CGImageSourceRef imageSource = CGImageSourceCreateWithURL((__bridge CFURLRef)url, nil);
-  if (!imageSource) return nil;
+  CGImageSourceRef imageSource =
+      CGImageSourceCreateWithURL((__bridge CFURLRef)url, nil);
+  if (!imageSource)
+    return nil;
 
   CFStringRef sourceType = CGImageSourceGetType(imageSource);
   if (!sourceType) {
@@ -78,14 +87,19 @@ static NSDictionary *updateMetadata(NSURL *url, NSDictionary *tags) {
     return nil;
   }
 
-  CFDictionaryRef props = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil);
-  NSMutableDictionary *metadata = props
-    ? [NSMutableDictionary dictionaryWithDictionary:(__bridge_transfer NSDictionary *)props]
-    : [NSMutableDictionary new];
+  CFDictionaryRef props =
+      CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil);
+  NSMutableDictionary *metadata =
+      props ? [NSMutableDictionary
+                  dictionaryWithDictionary:(__bridge_transfer NSDictionary *)
+                                               props]
+            : [NSMutableDictionary new];
 
   // Merge into Exif dict (filter out GPS-prefixed keys)
-  NSMutableDictionary *exifDict = [NSMutableDictionary dictionaryWithDictionary:
-    metadata[(__bridge NSString *)kCGImagePropertyExifDictionary] ?: @{}];
+  NSMutableDictionary *exifDict = [NSMutableDictionary
+      dictionaryWithDictionary:metadata[(__bridge NSString *)
+                                            kCGImagePropertyExifDictionary]
+                                   ?: @{}];
   for (NSString *key in tags) {
     if (![key hasPrefix:@"GPS"]) {
       exifDict[key] = tags[key];
@@ -94,28 +108,33 @@ static NSDictionary *updateMetadata(NSURL *url, NSDictionary *tags) {
   metadata[(__bridge NSString *)kCGImagePropertyExifDictionary] = exifDict;
 
   // Handle GPS tags
-  NSMutableDictionary *gpsDict = [NSMutableDictionary dictionaryWithDictionary:
-    metadata[(__bridge NSString *)kCGImagePropertyGPSDictionary] ?: @{}];
+  NSMutableDictionary *gpsDict = [NSMutableDictionary
+      dictionaryWithDictionary:metadata[(__bridge NSString *)
+                                            kCGImagePropertyGPSDictionary]
+                                   ?: @{}];
 
   NSNumber *latitude = tags[@"GPSLatitude"];
   if (latitude) {
     double lat = latitude.doubleValue;
     gpsDict[(__bridge NSString *)kCGImagePropertyGPSLatitude] = @(fabs(lat));
-    gpsDict[(__bridge NSString *)kCGImagePropertyGPSLatitudeRef] = lat >= 0 ? @"N" : @"S";
+    gpsDict[(__bridge NSString *)kCGImagePropertyGPSLatitudeRef] =
+        lat >= 0 ? @"N" : @"S";
   }
 
   NSNumber *longitude = tags[@"GPSLongitude"];
   if (longitude) {
     double lng = longitude.doubleValue;
     gpsDict[(__bridge NSString *)kCGImagePropertyGPSLongitude] = @(fabs(lng));
-    gpsDict[(__bridge NSString *)kCGImagePropertyGPSLongitudeRef] = lng >= 0 ? @"E" : @"W";
+    gpsDict[(__bridge NSString *)kCGImagePropertyGPSLongitudeRef] =
+        lng >= 0 ? @"E" : @"W";
   }
 
   NSNumber *altitude = tags[@"GPSAltitude"];
   if (altitude) {
     double alt = altitude.doubleValue;
     gpsDict[(__bridge NSString *)kCGImagePropertyGPSAltitude] = @(fabs(alt));
-    gpsDict[(__bridge NSString *)kCGImagePropertyGPSAltitudeRef] = @(alt >= 0 ? 0 : 1);
+    gpsDict[(__bridge NSString *)kCGImagePropertyGPSAltitudeRef] =
+        @(alt >= 0 ? 0 : 1);
   }
 
   NSString *gpsDate = tags[@"GPSDateStamp"];
@@ -129,7 +148,8 @@ static NSDictionary *updateMetadata(NSURL *url, NSDictionary *tags) {
   }
 
   metadata[(__bridge NSString *)kCGImagePropertyGPSDictionary] = gpsDict;
-  metadata[(__bridge NSString *)kCGImageDestinationLossyCompressionQuality] = @(1);
+  metadata[(__bridge NSString *)kCGImageDestinationLossyCompressionQuality] =
+      @(1);
 
   // Write image with updated metadata
   CGImageRef cgImage = CGImageSourceCreateImageAtIndex(imageSource, 0, nil);
@@ -140,7 +160,7 @@ static NSDictionary *updateMetadata(NSURL *url, NSDictionary *tags) {
 
   NSMutableData *destinationData = [NSMutableData new];
   CGImageDestinationRef destination = CGImageDestinationCreateWithData(
-    (__bridge CFMutableDataRef)destinationData, sourceType, 1, nil);
+      (__bridge CFMutableDataRef)destinationData, sourceType, 1, nil);
 
   if (!destination) {
     CGImageRelease(cgImage);
@@ -148,14 +168,15 @@ static NSDictionary *updateMetadata(NSURL *url, NSDictionary *tags) {
     return nil;
   }
 
-  CGImageDestinationAddImage(destination, cgImage, (__bridge CFDictionaryRef)metadata);
+  CGImageDestinationAddImage(destination, cgImage,
+                             (__bridge CFDictionaryRef)metadata);
   CGImageDestinationFinalize(destination);
 
   CFRelease(destination);
   CGImageRelease(cgImage);
   CFRelease(imageSource);
 
-  return @{@"metadata": metadata, @"data": destinationData};
+  return @{@"metadata" : metadata, @"data" : destinationData};
 }
 
 #pragma mark - Exify Module
@@ -173,13 +194,17 @@ static NSDictionary *updateMetadata(NSURL *url, NSDictionary *tags) {
       return;
     }
 
-    PHContentEditingInputRequestOptions *options = [PHContentEditingInputRequestOptions new];
+    PHContentEditingInputRequestOptions *options =
+        [PHContentEditingInputRequestOptions new];
     options.networkAccessAllowed = YES;
 
     [asset requestContentEditingInputWithOptions:options
-      completionHandler:^(PHContentEditingInput *contentInput, NSDictionary *info) {
-        resolve(readExifTags(contentInput.fullSizeImageURL));
-      }];
+                               completionHandler:^(
+                                   PHContentEditingInput *contentInput,
+                                   NSDictionary *info) {
+                                 resolve(readExifTags(
+                                     contentInput.fullSizeImageURL));
+                               }];
   } else {
     resolve(readExifTags([NSURL URLWithString:uri]));
   }
@@ -197,42 +222,62 @@ static NSDictionary *updateMetadata(NSURL *url, NSDictionary *tags) {
       return;
     }
 
-    PHContentEditingInputRequestOptions *options = [PHContentEditingInputRequestOptions new];
+    PHContentEditingInputRequestOptions *options =
+        [PHContentEditingInputRequestOptions new];
     options.networkAccessAllowed = YES;
 
-    [asset requestContentEditingInputWithOptions:options
-      completionHandler:^(PHContentEditingInput *contentInput, NSDictionary *info) {
-        if (!contentInput || !contentInput.fullSizeImageURL) {
-          reject(@"Error", @"Unable to read metadata from asset", nil);
-          return;
-        }
+    [asset
+        requestContentEditingInputWithOptions:options
+                            completionHandler:^(
+                                PHContentEditingInput *contentInput,
+                                NSDictionary *info) {
+                              if (!contentInput ||
+                                  !contentInput.fullSizeImageURL) {
+                                reject(@"Error",
+                                       @"Unable to read metadata from asset",
+                                       nil);
+                                return;
+                              }
 
-        NSDictionary *result = updateMetadata(contentInput.fullSizeImageURL, tags);
-        if (!result) {
-          reject(@"Error", @"Could not update metadata", nil);
-          return;
-        }
+                              NSDictionary *result = updateMetadata(
+                                  contentInput.fullSizeImageURL, tags);
+                              if (!result) {
+                                reject(@"Error", @"Could not update metadata",
+                                       nil);
+                                return;
+                              }
 
-        __block NSString *newAssetId = nil;
-        NSError *error = nil;
-        [[PHPhotoLibrary sharedPhotoLibrary] performChangesAndWait:^{
-          PHAssetCreationRequest *request = [PHAssetCreationRequest creationRequestForAsset];
-          [request addResourceWithType:PHAssetResourceTypePhoto data:result[@"data"] options:nil];
-          request.creationDate = [NSDate date];
-          newAssetId = request.placeholderForCreatedAsset.localIdentifier;
-        } error:&error];
+                              __block NSString *newAssetId = nil;
+                              NSError *error = nil;
+                              [[PHPhotoLibrary sharedPhotoLibrary]
+                                  performChangesAndWait:^{
+                                    PHAssetCreationRequest *request =
+                                        [PHAssetCreationRequest
+                                            creationRequestForAsset];
+                                    [request addResourceWithType:
+                                                 PHAssetResourceTypePhoto
+                                                            data:result[@"data"]
+                                                         options:nil];
+                                    request.creationDate = [NSDate date];
+                                    newAssetId =
+                                        request.placeholderForCreatedAsset
+                                            .localIdentifier;
+                                  }
+                                                  error:&error];
 
-        if (error) {
-          reject(@"Error", @"Could not save to image file", error);
-          return;
-        }
+                              if (error) {
+                                reject(@"Error",
+                                       @"Could not save to image file", error);
+                                return;
+                              }
 
-        resolve(@{
-          @"uri": [NSString stringWithFormat:@"ph://%@", newAssetId],
-          @"assetId": newAssetId ?: @"",
-          @"tags": getExifTags(result[@"metadata"]),
-        });
-      }];
+                              resolve(@{
+                                @"uri" : [NSString
+                                    stringWithFormat:@"ph://%@", newAssetId],
+                                @"assetId" : newAssetId ?: @"",
+                                @"tags" : getExifTags(result[@"metadata"]),
+                              });
+                            }];
   } else {
     NSURL *url = [NSURL URLWithString:uri];
     if (!url) {
@@ -254,20 +299,18 @@ static NSDictionary *updateMetadata(NSURL *url, NSDictionary *tags) {
     }
 
     resolve(@{
-      @"uri": uri,
-      @"tags": getExifTags(result[@"metadata"]),
+      @"uri" : uri,
+      @"tags" : getExifTags(result[@"metadata"]),
     });
   }
 }
 
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
-    (const facebook::react::ObjCTurboModule::InitParams &)params
-{
-    return std::make_shared<facebook::react::NativeExifySpecJSI>(params);
+    (const facebook::react::ObjCTurboModule::InitParams &)params {
+  return std::make_shared<facebook::react::NativeExifySpecJSI>(params);
 }
 
-+ (NSString *)moduleName
-{
++ (NSString *)moduleName {
   return @"Exify";
 }
 
