@@ -1,17 +1,25 @@
 package com.lodev09.exify
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
+import androidx.core.content.ContextCompat
 import androidx.exifinterface.media.ExifInterface
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.ReadableType
+import com.facebook.react.modules.core.PermissionAwareActivity
+import com.facebook.react.modules.core.PermissionListener
 import com.facebook.react.util.RNLog
 import com.lodev09.exify.ExifyUtils.formatTags
 import java.io.IOException
 
 private const val ERROR_TAG = "E_EXIFY_ERROR"
+private const val MEDIA_LOCATION_REQUEST_CODE = 4209
 
 class ExifyModule(
   reactContext: ReactApplicationContext,
@@ -31,10 +39,48 @@ class ExifyModule(
       return
     }
 
+    // On Android Q+, request ACCESS_MEDIA_LOCATION for unredacted GPS data
+    if (scheme == "content" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+      ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_MEDIA_LOCATION) !=
+        PackageManager.PERMISSION_GRANTED
+    ) {
+      val activity = context.currentActivity as? PermissionAwareActivity
+      if (activity != null) {
+        activity.requestPermissions(
+          arrayOf(Manifest.permission.ACCESS_MEDIA_LOCATION),
+          MEDIA_LOCATION_REQUEST_CODE,
+          PermissionListener { requestCode, _, _ ->
+            if (requestCode == MEDIA_LOCATION_REQUEST_CODE) {
+              readExif(uri, photoUri, scheme, promise)
+              true
+            } else {
+              false
+            }
+          },
+        )
+        return
+      }
+    }
+
+    readExif(uri, photoUri, scheme, promise)
+  }
+
+  private fun readExif(
+    uri: String,
+    photoUri: Uri,
+    scheme: String,
+    promise: Promise,
+  ) {
     try {
       val inputStream =
         if (scheme == "http" || scheme == "https") {
           java.net.URL(uri).openStream()
+        } else if (scheme == "content" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+          try {
+            context.contentResolver.openInputStream(MediaStore.setRequireOriginal(photoUri))
+          } catch (e: SecurityException) {
+            context.contentResolver.openInputStream(photoUri)
+          }
         } else {
           context.contentResolver.openInputStream(photoUri)
         }
