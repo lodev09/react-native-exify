@@ -226,6 +226,16 @@ static NSDictionary *updateMetadata(NSURL *url, NSDictionary *tags) {
                                  resolve(tags);
                                }];
   } else {
+    if ([uri hasPrefix:@"/"] || ![uri containsString:@"://"]) {
+      RCTLogWarn(@"Exify: URI must include a scheme (e.g. file://): %@", uri);
+      reject(@"Error",
+             [NSString stringWithFormat:@"URI must include a scheme (e.g. "
+                                        @"file://): %@",
+                                        uri],
+             nil);
+      return;
+    }
+
     NSURL *url = [NSURL URLWithString:uri];
     if (!url) {
       RCTLogWarn(@"Exify: Invalid URI: %@", uri);
@@ -317,6 +327,16 @@ static NSDictionary *updateMetadata(NSURL *url, NSDictionary *tags) {
                               });
                             }];
   } else {
+    if ([uri hasPrefix:@"/"] || ![uri containsString:@"://"]) {
+      RCTLogWarn(@"Exify: URI must include a scheme (e.g. file://): %@", uri);
+      reject(@"Error",
+             [NSString stringWithFormat:@"URI must include a scheme (e.g. "
+                                        @"file://): %@",
+                                        uri],
+             nil);
+      return;
+    }
+
     NSURL *url = [NSURL URLWithString:uri];
     if (!url) {
       reject(@"Error", @"Invalid URL", nil);
