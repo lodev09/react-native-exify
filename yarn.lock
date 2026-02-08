@@ -2959,6 +2959,29 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@lodev09/react-native-true-sheet@npm:^3.8.2":
+  version: 3.8.2
+  resolution: "@lodev09/react-native-true-sheet@npm:3.8.2"
+  peerDependencies:
+    "@gorhom/bottom-sheet": ">=5"
+    "@react-navigation/native": ">=7"
+    react: "*"
+    react-native: "*"
+    react-native-reanimated: ">=4"
+    react-native-worklets: "*"
+  peerDependenciesMeta:
+    "@gorhom/bottom-sheet":
+      optional: true
+    "@react-navigation/native":
+      optional: true
+    react-native-reanimated:
+      optional: true
+    react-native-worklets:
+      optional: true
+  checksum: 10c0/28e220e1ddb11f01027f8266ab79eb4982f8b504cbeb942aded99044d5ffd4f160022bf27d822bf89d8a766eefa4d7d46e2bda85d9bc3a3fe099f63f4c0dca07
+  languageName: node
+  linkType: hard
+
 "@nicolo-ribaudo/eslint-scope-5-internals@npm:5.1.1-v1":
   version: 5.1.1-v1
   resolution: "@nicolo-ribaudo/eslint-scope-5-internals@npm:5.1.1-v1"
@@ -10927,6 +10950,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "react-native-exify-example@workspace:example"
   dependencies:
+    "@lodev09/react-native-true-sheet": "npm:^3.8.2"
     expo: "npm:~54.0.33"
     expo-camera: "npm:~16.1.6"
     expo-dev-client: "npm:~6.0.20"

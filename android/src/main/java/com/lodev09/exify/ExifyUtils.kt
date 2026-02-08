@@ -13,9 +13,18 @@ object ExifyUtils {
       val attribute = exif.getAttribute(tag)
       if (attribute != null && attribute != "") {
         when (type) {
-          "string" -> tags.putString(tag, attribute)
-          "int" -> tags.putInt(tag, exif.getAttributeInt(tag, 0))
-          "double" -> tags.putDouble(tag, exif.getAttributeDouble(tag, 0.0))
+          "string" -> {
+            tags.putString(tag, attribute)
+          }
+
+          "int" -> {
+            tags.putInt(tag, exif.getAttributeInt(tag, 0))
+          }
+
+          "double" -> {
+            tags.putDouble(tag, exif.getAttributeDouble(tag, 0.0))
+          }
+
           "array" -> {
             val array = Arguments.createArray()
             exif.getAttributeRange(tag)?.forEach { value ->
