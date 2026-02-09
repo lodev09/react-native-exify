@@ -5,6 +5,8 @@
 
 A simple library to read and write image Exif metadata for your React Native Apps. 🏷️
 
+<img alt="@lodev09/react-native-exify" src="preview.gif" width="500" />
+
 ## Features
 
 * Read Exif data from an image
