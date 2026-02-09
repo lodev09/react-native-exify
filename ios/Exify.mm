@@ -3,14 +3,13 @@
 static NSSet *tiffKeys;
 
 __attribute__((constructor)) static void initTiffKeys(void) {
-  tiffKeys = [NSSet setWithObjects:@"Make", @"Model", @"Software", @"DateTime",
-                                   @"Artist", @"Copyright", @"ImageDescription",
-                                   @"Orientation", @"XResolution",
-                                   @"YResolution", @"ResolutionUnit",
-                                   @"Compression", @"PhotometricInterpretation",
-                                   @"TransferFunction", @"WhitePoint",
-                                   @"PrimaryChromaticities", @"HostComputer",
-                                   nil];
+  tiffKeys = [NSSet
+      setWithObjects:@"Make", @"Model", @"Software", @"DateTime", @"Artist",
+                     @"Copyright", @"ImageDescription", @"Orientation",
+                     @"XResolution", @"YResolution", @"ResolutionUnit",
+                     @"Compression", @"PhotometricInterpretation",
+                     @"TransferFunction", @"WhitePoint",
+                     @"PrimaryChromaticities", @"HostComputer", nil];
 }
 
 #pragma mark - Helpers
@@ -122,6 +121,11 @@ static NSDictionary *updateMetadata(NSURL *url, NSDictionary *tags) {
                                             kCGImagePropertyGPSDictionary]
                                    ?: @{}];
 
+  // Pre-read explicit GPS ref values so coordinate handlers can use them
+  NSString *latRef = tags[@"GPSLatitudeRef"];
+  NSString *lngRef = tags[@"GPSLongitudeRef"];
+  NSNumber *altRef = tags[@"GPSAltitudeRef"];
+
   for (NSString *key in tags) {
     id value = tags[key];
 
@@ -129,18 +133,21 @@ static NSDictionary *updateMetadata(NSURL *url, NSDictionary *tags) {
       double lat = [value doubleValue];
       gpsDict[(__bridge NSString *)kCGImagePropertyGPSLatitude] = @(fabs(lat));
       gpsDict[(__bridge NSString *)kCGImagePropertyGPSLatitudeRef] =
-          lat >= 0 ? @"N" : @"S";
+          latRef ?: (lat >= 0 ? @"N" : @"S");
     } else if ([key isEqualToString:@"GPSLongitude"]) {
       double lng = [value doubleValue];
-      gpsDict[(__bridge NSString *)kCGImagePropertyGPSLongitude] =
-          @(fabs(lng));
+      gpsDict[(__bridge NSString *)kCGImagePropertyGPSLongitude] = @(fabs(lng));
       gpsDict[(__bridge NSString *)kCGImagePropertyGPSLongitudeRef] =
-          lng >= 0 ? @"E" : @"W";
+          lngRef ?: (lng >= 0 ? @"E" : @"W");
     } else if ([key isEqualToString:@"GPSAltitude"]) {
       double alt = [value doubleValue];
       gpsDict[(__bridge NSString *)kCGImagePropertyGPSAltitude] = @(fabs(alt));
       gpsDict[(__bridge NSString *)kCGImagePropertyGPSAltitudeRef] =
-          @(alt >= 0 ? 0 : 1);
+          altRef ?: @(alt >= 0 ? 0 : 1);
+    } else if ([key isEqualToString:@"GPSLatitudeRef"] ||
+               [key isEqualToString:@"GPSLongitudeRef"] ||
+               [key isEqualToString:@"GPSAltitudeRef"]) {
+      // Already handled above
     } else if ([key hasPrefix:@"GPS"]) {
       gpsDict[[key substringFromIndex:3]] = value;
     } else if ([tiffKeys containsObject:key]) {

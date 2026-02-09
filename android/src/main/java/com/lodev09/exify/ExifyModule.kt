@@ -42,7 +42,7 @@ class ExifyModule(
     // On Android Q+, request ACCESS_MEDIA_LOCATION for unredacted GPS data
     if (scheme == "content" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
       ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_MEDIA_LOCATION) !=
-        PackageManager.PERMISSION_GRANTED
+      PackageManager.PERMISSION_GRANTED
     ) {
       val activity = context.currentActivity as? PermissionAwareActivity
       if (activity != null) {
@@ -156,14 +156,46 @@ class ExifyModule(
           tags.hasKey(ExifInterface.TAG_GPS_LATITUDE) &&
           tags.hasKey(ExifInterface.TAG_GPS_LONGITUDE)
         ) {
-          exif.setLatLong(
-            tags.getDouble(ExifInterface.TAG_GPS_LATITUDE),
-            tags.getDouble(ExifInterface.TAG_GPS_LONGITUDE),
-          )
+          val hasExplicitRef =
+            tags.hasKey(ExifInterface.TAG_GPS_LATITUDE_REF) ||
+              tags.hasKey(ExifInterface.TAG_GPS_LONGITUDE_REF)
+
+          if (hasExplicitRef) {
+            val lat = tags.getDouble(ExifInterface.TAG_GPS_LATITUDE)
+            val lng = tags.getDouble(ExifInterface.TAG_GPS_LONGITUDE)
+            val latRef =
+              if (tags.hasKey(ExifInterface.TAG_GPS_LATITUDE_REF)) {
+                tags.getString(ExifInterface.TAG_GPS_LATITUDE_REF)
+              } else {
+                if (lat >= 0) "N" else "S"
+              }
+            val lngRef =
+              if (tags.hasKey(ExifInterface.TAG_GPS_LONGITUDE_REF)) {
+                tags.getString(ExifInterface.TAG_GPS_LONGITUDE_REF)
+              } else {
+                if (lng >= 0) "E" else "W"
+              }
+
+            exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, ExifyUtils.decimalToDms(Math.abs(lat)))
+            exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, latRef)
+            exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, ExifyUtils.decimalToDms(Math.abs(lng)))
+            exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, lngRef)
+          } else {
+            exif.setLatLong(
+              tags.getDouble(ExifInterface.TAG_GPS_LATITUDE),
+              tags.getDouble(ExifInterface.TAG_GPS_LONGITUDE),
+            )
+          }
         }
 
         if (tags.hasKey(ExifInterface.TAG_GPS_ALTITUDE)) {
-          exif.setAltitude(tags.getDouble(ExifInterface.TAG_GPS_ALTITUDE))
+          val alt = tags.getDouble(ExifInterface.TAG_GPS_ALTITUDE)
+          if (tags.hasKey(ExifInterface.TAG_GPS_ALTITUDE_REF)) {
+            exif.setAttribute(ExifInterface.TAG_GPS_ALTITUDE, ExifyUtils.decimalToRational(Math.abs(alt)))
+            exif.setAttribute(ExifInterface.TAG_GPS_ALTITUDE_REF, tags.getInt(ExifInterface.TAG_GPS_ALTITUDE_REF).toString())
+          } else {
+            exif.setAltitude(alt)
+          }
         }
 
         params.putString("uri", uri)
