@@ -47,6 +47,7 @@ export default function App() {
       GPSTimeStamp: '10:10:10',
       GPSDateStamp: '2024:10:10',
       GPSDOP: 5.0,
+      GPSHPositioningError: '10.0',
       GPSImgDirection: 180.5,
       GPSImgDirectionRef: 'T',
       UserComment: 'Exif updated via @lodev09/react-native-exify',

@@ -23,7 +23,7 @@ private const val MEDIA_LOCATION_REQUEST_CODE = 4209
 
 class ExifyModule(
   reactContext: ReactApplicationContext,
-) : NativeExifySpec(reactContext) {
+) : NativeExifyModuleSpec(reactContext) {
   private val context = reactContext
 
   override fun read(
@@ -211,6 +211,6 @@ class ExifyModule(
   }
 
   companion object {
-    const val NAME = NativeExifySpec.NAME
+    const val NAME = NativeExifyModuleSpec.NAME
   }
 }

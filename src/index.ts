@@ -1,4 +1,4 @@
-import Exify from './NativeExify';
+import Exify from './specs/NativeExifyModule';
 import type { ExifTags, ExifyWriteResult } from './types';
 
 /**
