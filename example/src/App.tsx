@@ -13,12 +13,16 @@ import {
   ImagePickerSheet,
   type ImagePickerSheetRef,
 } from './components/ImagePickerSheet';
+import { ExifOverlay } from './components/ExifOverlay';
 
 export default function App() {
   const cameraRef = useRef<CameraView>(null);
   const promptRef = useRef<PromptSheetRef>(null);
   const pickerRef = useRef<ImagePickerSheetRef>(null);
   const [preview, setPreview] = useState<string>();
+  const [exifTags, setExifTags] = useState<ExifTags | null>(null);
+  const [exifUri, setExifUri] = useState<string>();
+  const [urlPreview, setUrlPreview] = useState<string>();
 
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [mediaPermission, requestMediaPermission] =
@@ -32,6 +36,8 @@ export default function App() {
   const readExif = async (uri: string) => {
     const tags = await Exify.read(uri);
     console.log('readExif:', json(tags));
+    setExifUri(uri);
+    setExifTags(tags);
     return tags;
   };
 
@@ -117,19 +123,21 @@ export default function App() {
     await readWriteRoundTrip(uri);
   };
 
-  const openUrl = async () => {
-    const defaultUrl =
-      'https://raw.githubusercontent.com/ianare/exif-samples/master/jpg/gps/DSCN0010.jpg';
+  const lastUrlRef = useRef(
+    'https://raw.githubusercontent.com/ianare/exif-samples/master/jpg/gps/DSCN0010.jpg'
+  );
 
+  const openUrl = async () => {
     const url = await promptRef.current?.prompt(
       'Enter image URL',
-      defaultUrl,
+      lastUrlRef.current,
       'https://'
     );
     if (!url) return;
 
     console.log('openUrl:', url);
-    // setPreview(url);
+    lastUrlRef.current = url;
+    setUrlPreview(url);
     await readExif(url);
   };
 
@@ -153,7 +161,22 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <CameraView ref={cameraRef} style={styles.camera} facing="back" />
+      <View style={styles.camera}>
+        <View style={styles.cameraPlaceholder}>
+          <Text style={styles.cameraIcon}>📷</Text>
+          <Text style={styles.cameraLabel}>Camera</Text>
+        </View>
+        <CameraView
+          style={StyleSheet.absoluteFill}
+          facing="back"
+          ref={cameraRef}
+        />
+        <ExifOverlay
+          uri={exifUri}
+          tags={exifTags}
+          onClose={() => setExifTags(null)}
+        />
+      </View>
       <PromptSheet ref={promptRef} />
       <ImagePickerSheet ref={pickerRef} />
       <View style={styles.controls}>
@@ -162,15 +185,21 @@ export default function App() {
           onLongPress={testRoundTrip}
           style={styles.sideButton}
         >
-          {preview && (
+          {preview ? (
             <Image source={{ uri: preview }} style={styles.preview} />
+          ) : (
+            <Text style={styles.buttonIcon}>🏞️</Text>
           )}
         </Pressable>
         <Pressable onPress={takePhoto} style={styles.captureButton}>
           <View style={styles.captureInner} />
         </Pressable>
         <Pressable onPress={openUrl} style={styles.sideButton}>
-          <Text style={styles.urlLabel}>URL</Text>
+          {urlPreview ? (
+            <Image source={{ uri: urlPreview }} style={styles.preview} />
+          ) : (
+            <Text style={styles.urlLabel}>URL</Text>
+          )}
         </Pressable>
       </View>
     </View>
@@ -192,6 +221,20 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
   },
+  cameraPlaceholder: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#1a1a1a',
+  },
+  cameraIcon: {
+    fontSize: 80,
+    marginBottom: 12,
+  },
+  cameraLabel: {
+    color: 'rgba(255, 255, 255, 0.3)',
+    fontSize: 15,
+  },
   controls: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -207,8 +250,6 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 8,
     backgroundColor: '#333',
-    borderWidth: 1,
-    borderColor: '#555',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
@@ -231,6 +272,9 @@ const styles = StyleSheet.create({
     height: 58,
     borderRadius: 29,
     backgroundColor: '#fff',
+  },
+  buttonIcon: {
+    fontSize: 24,
   },
   urlLabel: {
     color: '#fff',

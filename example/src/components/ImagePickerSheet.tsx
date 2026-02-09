@@ -122,10 +122,12 @@ export const ImagePickerSheet = forwardRef<ImagePickerSheetRef>(
         <View style={styles.header}>
           <Text style={styles.title}>Recents</Text>
           <Pressable
-            style={styles.cancelButton}
+            style={styles.closeButton}
             onPress={() => sheetRef.current?.dismiss()}
           >
-            <Text style={styles.cancelText}>Cancel</Text>
+            <View style={styles.closeIcon}>
+              <Text style={styles.closeIconText}>✕</Text>
+            </View>
           </Pressable>
         </View>
       ),
@@ -172,13 +174,21 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
   },
-  cancelButton: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+  closeButton: {
+    padding: 4,
   },
-  cancelText: {
-    color: '#0a84ff',
-    fontSize: 17,
+  closeIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeIconText: {
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 13,
+    fontWeight: '600',
   },
   row: {
     gap: GAP,

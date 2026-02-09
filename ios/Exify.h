@@ -4,6 +4,6 @@
 #import <React/RCTLog.h>
 #import <UIKit/UIKit.h>
 
-@interface Exify : NSObject <NativeExifySpec>
+@interface Exify : NSObject <NativeExifyModuleSpec>
 
 @end

@@ -65,6 +65,10 @@ console.log(result.tags)
 
 See [example](example) for more detailed usage.
 
+### Built with True Sheet
+
+The example app uses [@lodev09/react-native-true-sheet](https://github.com/lodev09/react-native-true-sheet) for the image picker UI. Check it out!
+
 ## Contributing
 
 See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
