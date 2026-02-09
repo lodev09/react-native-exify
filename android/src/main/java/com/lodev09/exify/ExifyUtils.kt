@@ -46,4 +46,19 @@ object ExifyUtils {
 
     return tags
   }
+
+  @JvmStatic
+  fun decimalToDms(decimal: Double): String {
+    val degrees = decimal.toInt()
+    val minutesDecimal = (decimal - degrees) * 60
+    val minutes = minutesDecimal.toInt()
+    val seconds = ((minutesDecimal - minutes) * 60 * 10000).toLong()
+    return "$degrees/1,$minutes/1,$seconds/10000"
+  }
+
+  @JvmStatic
+  fun decimalToRational(value: Double): String {
+    val numerator = (value * 10000).toLong()
+    return "$numerator/10000"
+  }
 }

@@ -40,8 +40,10 @@ export default function App() {
   const writeExif = async (uri: string) => {
     const [lng, lat] = mockPosition();
     const tags: ExifTags = {
-      GPSLatitude: lat,
-      GPSLongitude: lng,
+      GPSLatitude: Math.abs(lat),
+      GPSLatitudeRef: lat >= 0 ? 'N' : 'S',
+      GPSLongitude: Math.abs(lng),
+      GPSLongitudeRef: lng >= 0 ? 'E' : 'W',
       GPSTimeStamp: '10:10:10',
       GPSDateStamp: '2024:10:10',
       GPSDOP: 5.0,
@@ -59,6 +61,18 @@ export default function App() {
     console.log('writeExif result:', json(result));
 
     return result;
+  };
+
+  const readWriteRoundTrip = async (uri: string) => {
+    const tags = await Exify.read(uri);
+    if (!tags) return;
+
+    console.log('roundTrip read:', json(tags));
+    const result = await Exify.write(uri, tags);
+    console.log('roundTrip write:', json(result));
+
+    const verify = await Exify.read(uri);
+    console.log('roundTrip verify:', json(verify));
   };
 
   const takePhoto = async () => {
@@ -79,25 +93,40 @@ export default function App() {
     await readExif(asset.uri);
   };
 
-  const openLibrary = async () => {
+  const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       quality: 1,
     });
 
-    if (result.canceled) return;
+    if (result.canceled) return null;
 
     const asset = result.assets[0];
-    if (!asset) return;
+    if (!asset) return null;
 
     const uri =
       Platform.OS === 'ios' && asset.assetId
         ? `ph://${asset.assetId}`
         : asset.uri;
 
-    console.log('openLibrary:', uri);
     setPreview(asset.uri);
+    return uri;
+  };
+
+  const openLibrary = async () => {
+    const uri = await pickImage();
+    if (!uri) return;
+
+    console.log('openLibrary:', uri);
     await readExif(uri);
+  };
+
+  const testRoundTrip = async () => {
+    const uri = await pickImage();
+    if (!uri) return;
+
+    console.log('testRoundTrip:', uri);
+    await readWriteRoundTrip(uri);
   };
 
   const openUrl = async () => {
@@ -139,7 +168,11 @@ export default function App() {
       <CameraView ref={cameraRef} style={styles.camera} facing="back" />
       <PromptSheet ref={promptRef} />
       <View style={styles.controls}>
-        <Pressable onPress={openLibrary} style={styles.previewButton}>
+        <Pressable
+          onPress={openLibrary}
+          onLongPress={testRoundTrip}
+          style={styles.sideButton}
+        >
           {preview && (
             <Image source={{ uri: preview }} style={styles.preview} />
           )}
@@ -147,7 +180,7 @@ export default function App() {
         <Pressable onPress={takePhoto} style={styles.captureButton}>
           <View style={styles.captureInner} />
         </Pressable>
-        <Pressable onPress={openUrl} style={styles.urlButton}>
+        <Pressable onPress={openUrl} style={styles.sideButton}>
           <Text style={styles.urlLabel}>URL</Text>
         </Pressable>
       </View>
@@ -180,11 +213,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     width: '100%',
   },
-  previewButton: {
+  sideButton: {
     width: 50,
     height: 50,
     borderRadius: 8,
     backgroundColor: '#333',
+    borderWidth: 1,
+    borderColor: '#555',
+    alignItems: 'center',
+    justifyContent: 'center',
     overflow: 'hidden',
   },
   preview: {
@@ -205,14 +242,6 @@ const styles = StyleSheet.create({
     height: 58,
     borderRadius: 29,
     backgroundColor: '#fff',
-  },
-  urlButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 8,
-    backgroundColor: '#333',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   urlLabel: {
     color: '#fff',
