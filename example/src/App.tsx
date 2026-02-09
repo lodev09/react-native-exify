@@ -1,14 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Pressable,
-  Platform,
-  Linking,
-  Text,
-} from 'react-native';
+import { StyleSheet, View, Pressable, Linking, Text } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import * as ImagePicker from 'expo-image-picker';
+
 import * as MediaLibrary from 'expo-media-library';
 import { Image } from 'expo-image';
 import * as Exify from '@lodev09/react-native-exify';
@@ -16,10 +9,15 @@ import type { ExifTags } from '@lodev09/react-native-exify';
 
 import { mockPosition, json } from './utils';
 import { PromptSheet, type PromptSheetRef } from './components/PromptSheet';
+import {
+  ImagePickerSheet,
+  type ImagePickerSheetRef,
+} from './components/ImagePickerSheet';
 
 export default function App() {
   const cameraRef = useRef<CameraView>(null);
   const promptRef = useRef<PromptSheetRef>(null);
+  const pickerRef = useRef<ImagePickerSheetRef>(null);
   const [preview, setPreview] = useState<string>();
 
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
@@ -91,27 +89,16 @@ export default function App() {
     console.log('saved asset:', asset.uri);
 
     setPreview(asset.uri);
+    pickerRef.current?.refresh();
     await readExif(asset.uri);
   };
 
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 1,
-    });
+    const result = await pickerRef.current?.pick();
+    if (!result) return null;
 
-    if (result.canceled) return null;
-
-    const asset = result.assets[0];
-    if (!asset) return null;
-
-    const uri =
-      Platform.OS === 'ios' && asset.assetId
-        ? `ph://${asset.assetId}`
-        : asset.uri;
-
-    setPreview(asset.uri);
-    return uri;
+    setPreview(result.preview);
+    return result.uri;
   };
 
   const openLibrary = async () => {
@@ -168,6 +155,7 @@ export default function App() {
     <View style={styles.container}>
       <CameraView ref={cameraRef} style={styles.camera} facing="back" />
       <PromptSheet ref={promptRef} />
+      <ImagePickerSheet ref={pickerRef} />
       <View style={styles.controls}>
         <Pressable
           onPress={openLibrary}
