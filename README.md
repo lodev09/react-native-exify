@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/lodev09/react-native-exify/actions/workflows/ci.yml/badge.svg)](https://github.com/lodev09/react-native-exify/actions/workflows/ci.yml)
 ![NPM Downloads](https://img.shields.io/npm/dw/%40lodev09%2Freact-native-exify)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/lodev09/react-native-exify)
 
 A simple library to read and write image Exif metadata for your React Native Apps. 🏷️
 
