@@ -133,7 +133,14 @@ class ExifyModule(
 
             ReadableType.Number -> {
               when (valType) {
-                "double" -> exif.setAttribute(tag, tags.getDouble(tag).toBigDecimal().toPlainString())
+                "double" -> {
+                  val value = tags.getDouble(tag)
+                  if (tag.startsWith("GPS")) {
+                    exif.setAttribute(tag, ExifyUtils.decimalToRational(value))
+                  } else {
+                    exif.setAttribute(tag, value.toBigDecimal().toPlainString())
+                  }
+                }
                 else -> exif.setAttribute(tag, tags.getDouble(tag).toInt().toString())
               }
             }
