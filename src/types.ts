@@ -15,7 +15,7 @@ export interface ExifTags {
   GPSDifferential?: number;
   GPSDestLatitudeRef?: string;
   GPSDestDistanceRef?: string;
-  GPSHPositioningError?: string;
+  GPSHPositioningError?: number;
   GPSDestDistance?: number;
   GPSDestBearing?: number;
   GPSDateStamp?: string;

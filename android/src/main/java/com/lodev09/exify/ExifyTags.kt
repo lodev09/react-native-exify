@@ -112,7 +112,7 @@ val EXIFY_TAGS =
     arrayOf("double", ExifInterface.TAG_GPS_DEST_LONGITUDE),
     arrayOf("string", ExifInterface.TAG_GPS_DEST_LONGITUDE_REF),
     arrayOf("int", ExifInterface.TAG_GPS_DIFFERENTIAL),
-    arrayOf("string", ExifInterface.TAG_GPS_H_POSITIONING_ERROR),
+    arrayOf("double", ExifInterface.TAG_GPS_H_POSITIONING_ERROR),
     arrayOf("double", ExifInterface.TAG_GPS_IMG_DIRECTION),
     arrayOf("string", ExifInterface.TAG_GPS_IMG_DIRECTION_REF),
     arrayOf("string", ExifInterface.TAG_GPS_LATITUDE_REF),
