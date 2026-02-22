@@ -16,6 +16,7 @@ import com.facebook.react.modules.core.PermissionAwareActivity
 import com.facebook.react.modules.core.PermissionListener
 import com.facebook.react.util.RNLog
 import com.lodev09.exify.ExifyUtils.formatTags
+import java.io.File
 import java.io.IOException
 
 private const val ERROR_TAG = "E_EXIFY_ERROR"
@@ -72,34 +73,65 @@ class ExifyModule(
     promise: Promise,
   ) {
     try {
-      val inputStream =
-        if (scheme == "http" || scheme == "https") {
-          java.net.URL(uri).openStream()
-        } else if (scheme == "content" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-          try {
-            context.contentResolver.openInputStream(MediaStore.setRequireOriginal(photoUri))
-          } catch (e: SecurityException) {
-            context.contentResolver.openInputStream(photoUri)
-          }
+      val exif =
+        if (scheme == "file") {
+          ExifInterface(photoUri.path!!)
         } else {
-          context.contentResolver.openInputStream(photoUri)
+          val inputStream =
+            if (scheme == "content" && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+              try {
+                context.contentResolver.openInputStream(MediaStore.setRequireOriginal(photoUri))
+              } catch (_: SecurityException) {
+                context.contentResolver.openInputStream(photoUri)
+              }
+            } else if (scheme == "http" || scheme == "https") {
+              java.net.URL(uri).openStream()
+            } else {
+              context.contentResolver.openInputStream(photoUri)
+            }
+
+          if (inputStream == null) {
+            RNLog.w(context, "Exify: Could not open URI: $uri")
+            promise.reject(ERROR_TAG, "Could not open URI: $uri")
+            return
+          }
+
+          inputStream.use { ExifInterface(it) }
         }
 
-      if (inputStream == null) {
-        RNLog.w(context, "Exify: Could not open URI: $uri")
-        promise.reject(ERROR_TAG, "Could not open URI: $uri")
-        return
+      val tags = formatTags(exif)
+
+      // ExifInterface ignores IFD0 tags placed in ExifIFD (non-standard but common
+      // with some image editors). Fall back to raw EXIF parsing for missing tags.
+      val missingTags =
+        IFD0_STRING_TAGS.filter { !tags.hasKey(it) }.toSet()
+      if (missingTags.isNotEmpty()) {
+        val fallback =
+          try {
+            openInputStream(uri, photoUri, scheme)?.use { readFallbackTags(it, missingTags) }
+          } catch (_: Exception) {
+            null
+          }
+        fallback?.forEach { (tag, value) -> tags.putString(tag, value) }
       }
 
-      inputStream.use {
-        val tags = formatTags(ExifInterface(it))
-        promise.resolve(tags)
-      }
+      promise.resolve(tags)
     } catch (e: Exception) {
       RNLog.w(context, "Exify: ${e.message}")
       promise.reject(ERROR_TAG, e.message, e)
     }
   }
+
+  private fun openInputStream(
+    uri: String,
+    photoUri: Uri,
+    scheme: String,
+  ): java.io.InputStream? =
+    when (scheme) {
+      "file" -> File(photoUri.path!!).inputStream()
+      "content" -> context.contentResolver.openInputStream(photoUri)
+      else -> java.net.URL(uri).openStream()
+    }
 
   @Throws(IOException::class)
   override fun write(
