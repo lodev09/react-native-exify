@@ -3,6 +3,24 @@ package com.lodev09.exify
 import androidx.exifinterface.media.ExifInterface
 
 /**
+ * IFD0 tags that ExifInterface may fail to read when they are
+ * incorrectly placed inside the ExifIFD by some image editors.
+ */
+val IFD0_FALLBACK_TAGS =
+  setOf(
+    ExifInterface.TAG_MAKE,
+    ExifInterface.TAG_MODEL,
+    ExifInterface.TAG_ARTIST,
+    ExifInterface.TAG_COPYRIGHT,
+    ExifInterface.TAG_IMAGE_DESCRIPTION,
+    ExifInterface.TAG_SOFTWARE,
+    ExifInterface.TAG_ORIENTATION,
+    ExifInterface.TAG_X_RESOLUTION,
+    ExifInterface.TAG_Y_RESOLUTION,
+    ExifInterface.TAG_RESOLUTION_UNIT,
+  )
+
+/**
  * Supported Exif Tags
  * Note: Latitude, Longitude and Altitude tags are updated separately
  */
@@ -64,13 +82,14 @@ val EXIFY_TAGS =
     arrayOf("double", ExifInterface.TAG_FOCAL_LENGTH),
     arrayOf("string", ExifInterface.TAG_LENS_MAKE),
     arrayOf("string", ExifInterface.TAG_LENS_MODEL),
+    arrayOf("string", ExifInterface.TAG_BODY_SERIAL_NUMBER),
     arrayOf("array", ExifInterface.TAG_LENS_SPECIFICATION),
     arrayOf("int", ExifInterface.TAG_FOCAL_LENGTH_IN_35MM_FILM),
     arrayOf("int", ExifInterface.TAG_FOCAL_PLANE_RESOLUTION_UNIT),
     arrayOf("double", ExifInterface.TAG_FOCAL_PLANE_X_RESOLUTION),
     arrayOf("double", ExifInterface.TAG_FOCAL_PLANE_Y_RESOLUTION),
     arrayOf("int", ExifInterface.TAG_GAIN_CONTROL),
-    arrayOf("string", ExifInterface.TAG_ISO_SPEED_RATINGS),
+    arrayOf("int_array", ExifInterface.TAG_ISO_SPEED_RATINGS),
     arrayOf("string", ExifInterface.TAG_IMAGE_UNIQUE_ID),
     arrayOf("int", ExifInterface.TAG_LIGHT_SOURCE),
     arrayOf("string", ExifInterface.TAG_MAKER_NOTE),
