@@ -3,10 +3,10 @@ package com.lodev09.exify
 import androidx.exifinterface.media.ExifInterface
 
 /**
- * IFD0 string tags that ExifInterface may fail to read when they are
+ * IFD0 tags that ExifInterface may fail to read when they are
  * incorrectly placed inside the ExifIFD by some image editors.
  */
-val IFD0_STRING_TAGS =
+val IFD0_FALLBACK_TAGS =
   setOf(
     ExifInterface.TAG_MAKE,
     ExifInterface.TAG_MODEL,
@@ -14,6 +14,10 @@ val IFD0_STRING_TAGS =
     ExifInterface.TAG_COPYRIGHT,
     ExifInterface.TAG_IMAGE_DESCRIPTION,
     ExifInterface.TAG_SOFTWARE,
+    ExifInterface.TAG_ORIENTATION,
+    ExifInterface.TAG_X_RESOLUTION,
+    ExifInterface.TAG_Y_RESOLUTION,
+    ExifInterface.TAG_RESOLUTION_UNIT,
   )
 
 /**

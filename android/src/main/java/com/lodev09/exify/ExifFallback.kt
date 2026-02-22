@@ -5,40 +5,47 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 /**
- * IFD0 string tags that ExifInterface may miss when an image editor
+ * IFD0 tags that ExifInterface may miss when an image editor
  * (e.g. ON1 Photo RAW) places them inside the ExifIFD instead of IFD0.
  *
  * Maps EXIF tag number → ExifInterface tag name.
  */
 private val FALLBACK_TAGS =
   mapOf(
+    0x010E to "ImageDescription",
     0x010F to "Make",
     0x0110 to "Model",
+    0x0112 to "Orientation",
+    0x011A to "XResolution",
+    0x011B to "YResolution",
+    0x0128 to "ResolutionUnit",
+    0x0131 to "Software",
     0x013B to "Artist",
     0x8298 to "Copyright",
-    0x010E to "ImageDescription",
-    0x0131 to "Software",
   )
 
+private const val IFD_FORMAT_SHORT = 3
+private const val IFD_FORMAT_LONG = 4
+private const val IFD_FORMAT_RATIONAL = 5
 private const val IFD_FORMAT_STRING = 2
 private const val IFD_FORMAT_UNDEFINED = 7
 private const val EXIF_IFD_POINTER_TAG = 0x8769
 
 /**
- * Scans raw JPEG bytes for IFD0 string tags that may have been placed in
+ * Scans raw JPEG bytes for IFD0 tags that may have been placed in
  * the ExifIFD. Returns a map of tag name → value for any tags found.
  */
 fun readFallbackTags(
   inputStream: InputStream,
   missingTags: Set<String>,
-): Map<String, String> {
+): Map<String, Any> {
   if (missingTags.isEmpty()) return emptyMap()
 
   val neededTagNumbers = FALLBACK_TAGS.filterValues { it in missingTags }.keys
   if (neededTagNumbers.isEmpty()) return emptyMap()
 
   val bytes = readExifSegment(inputStream) ?: return emptyMap()
-  val result = mutableMapOf<String, String>()
+  val result = mutableMapOf<String, Any>()
 
   val app1 = findApp1Exif(bytes) ?: return emptyMap()
   val tiffOffset = app1.tiffOffset
@@ -102,7 +109,10 @@ private fun readExifSegment(inputStream: InputStream): ByteArray? {
   return out.toByteArray()
 }
 
-private data class App1Info(val tiffOffset: Int, val byteOrder: ByteOrder)
+private data class App1Info(
+  val tiffOffset: Int,
+  val byteOrder: ByteOrder,
+)
 
 private fun findApp1Exif(bytes: ByteArray): App1Info? {
   if (bytes.size < 4 || bytes[0] != 0xFF.toByte() || bytes[1] != 0xD8.toByte()) return null
@@ -166,7 +176,7 @@ private fun scanIfd(
   tiffOffset: Int,
   ifdOffset: Int,
   neededTagNumbers: Set<Int>,
-  result: MutableMap<String, String>,
+  result: MutableMap<String, Any>,
 ) {
   val absOffset = tiffOffset + ifdOffset
   if (absOffset + 2 > buf.limit()) return
@@ -181,29 +191,55 @@ private fun scanIfd(
 
     val format = buf.getShort(entryOffset + 2).toInt() and 0xFFFF
     val componentCount = buf.getInt(entryOffset + 4)
-
-    if (format != IFD_FORMAT_STRING && format != IFD_FORMAT_UNDEFINED) continue
-    if (componentCount <= 0 || componentCount > 1024) continue
-
-    val dataOffset =
-      if (componentCount <= 4) {
-        entryOffset + 8
-      } else {
-        tiffOffset + buf.getInt(entryOffset + 8)
-      }
-
-    if (dataOffset < 0 || dataOffset + componentCount > buf.limit()) continue
-
-    val strBytes = ByteArray(componentCount)
-    buf.position(dataOffset)
-    buf.get(strBytes)
-
-    // Trim trailing null bytes
-    var len = strBytes.size
-    while (len > 0 && strBytes[len - 1] == 0.toByte()) len--
-    if (len == 0) continue
+    if (componentCount <= 0) continue
 
     val tagName = FALLBACK_TAGS[tagNumber] ?: continue
-    result[tagName] = String(strBytes, 0, len, Charsets.UTF_8).trim()
+
+    when (format) {
+      IFD_FORMAT_SHORT -> {
+        if (componentCount != 1) continue
+        val value = buf.getShort(entryOffset + 8).toInt() and 0xFFFF
+        if (value == 0) continue
+        result[tagName] = value
+      }
+
+      IFD_FORMAT_LONG -> {
+        if (componentCount != 1) continue
+        val value = buf.getInt(entryOffset + 8).toLong() and 0xFFFFFFFFL
+        if (value == 0L) continue
+        result[tagName] = value.toInt()
+      }
+
+      IFD_FORMAT_RATIONAL -> {
+        if (componentCount != 1) continue
+        val dataOffset = tiffOffset + buf.getInt(entryOffset + 8)
+        if (dataOffset < 0 || dataOffset + 8 > buf.limit()) continue
+        val numerator = buf.getInt(dataOffset).toLong() and 0xFFFFFFFFL
+        val denominator = buf.getInt(dataOffset + 4).toLong() and 0xFFFFFFFFL
+        if (denominator == 0L) continue
+        result[tagName] = numerator.toDouble() / denominator.toDouble()
+      }
+
+      IFD_FORMAT_STRING, IFD_FORMAT_UNDEFINED -> {
+        if (componentCount > 1024) continue
+        val dataOffset =
+          if (componentCount <= 4) {
+            entryOffset + 8
+          } else {
+            tiffOffset + buf.getInt(entryOffset + 8)
+          }
+        if (dataOffset < 0 || dataOffset + componentCount > buf.limit()) continue
+
+        val strBytes = ByteArray(componentCount)
+        buf.position(dataOffset)
+        buf.get(strBytes)
+
+        var len = strBytes.size
+        while (len > 0 && strBytes[len - 1] == 0.toByte()) len--
+        if (len == 0) continue
+
+        result[tagName] = String(strBytes, 0, len, Charsets.UTF_8).trim()
+      }
+    }
   }
 }

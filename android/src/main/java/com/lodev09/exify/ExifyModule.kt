@@ -104,7 +104,12 @@ class ExifyModule(
       // ExifInterface ignores IFD0 tags placed in ExifIFD (non-standard but common
       // with some image editors). Fall back to raw EXIF parsing for missing tags.
       val missingTags =
-        IFD0_STRING_TAGS.filter { !tags.hasKey(it) }.toSet()
+        IFD0_FALLBACK_TAGS
+          .filter {
+            if (!tags.hasKey(it)) return@filter true
+            val type = tags.getType(it)
+            (type == ReadableType.Number && tags.getDouble(it) == 0.0)
+          }.toSet()
       if (missingTags.isNotEmpty()) {
         val fallback =
           try {
@@ -112,7 +117,13 @@ class ExifyModule(
           } catch (_: Exception) {
             null
           }
-        fallback?.forEach { (tag, value) -> tags.putString(tag, value) }
+        fallback?.forEach { (tag, value) ->
+          when (value) {
+            is String -> tags.putString(tag, value)
+            is Int -> tags.putInt(tag, value)
+            is Double -> tags.putDouble(tag, value)
+          }
+        }
       }
 
       promise.resolve(tags)
@@ -173,7 +184,10 @@ class ExifyModule(
                     exif.setAttribute(tag, value.toBigDecimal().toPlainString())
                   }
                 }
-                else -> exif.setAttribute(tag, tags.getDouble(tag).toInt().toString())
+
+                else -> {
+                  exif.setAttribute(tag, tags.getDouble(tag).toInt().toString())
+                }
               }
             }
 
