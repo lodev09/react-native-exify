@@ -2,11 +2,11 @@ package com.lodev09.exify
 
 import androidx.exifinterface.media.ExifInterface
 import com.facebook.react.bridge.Arguments
-import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.bridge.WritableMap
 
 object ExifyUtils {
   @JvmStatic
-  fun formatTags(exif: ExifInterface): ReadableMap {
+  fun formatTags(exif: ExifInterface): WritableMap {
     val tags = Arguments.createMap()
 
     for ((type, tag) in EXIFY_TAGS) {

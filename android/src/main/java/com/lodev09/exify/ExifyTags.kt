@@ -3,6 +3,20 @@ package com.lodev09.exify
 import androidx.exifinterface.media.ExifInterface
 
 /**
+ * IFD0 string tags that ExifInterface may fail to read when they are
+ * incorrectly placed inside the ExifIFD by some image editors.
+ */
+val IFD0_STRING_TAGS =
+  setOf(
+    ExifInterface.TAG_MAKE,
+    ExifInterface.TAG_MODEL,
+    ExifInterface.TAG_ARTIST,
+    ExifInterface.TAG_COPYRIGHT,
+    ExifInterface.TAG_IMAGE_DESCRIPTION,
+    ExifInterface.TAG_SOFTWARE,
+  )
+
+/**
  * Supported Exif Tags
  * Note: Latitude, Longitude and Altitude tags are updated separately
  */
