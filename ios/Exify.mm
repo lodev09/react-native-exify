@@ -42,7 +42,13 @@ static NSDictionary *getExifTags(NSDictionary *metadata) {
     id value = metadata[key];
     if (![value isKindOfClass:[NSDictionary class]] &&
         ![key isEqualToString:compressionKey]) {
-      tags[key] = value;
+      NSString *mappedKey = key;
+      if ([key isEqualToString:@"PixelWidth"]) {
+        mappedKey = @"PixelXDimension";
+      } else if ([key isEqualToString:@"PixelHeight"]) {
+        mappedKey = @"PixelYDimension";
+      }
+      tags[mappedKey] = value;
     }
   }
 

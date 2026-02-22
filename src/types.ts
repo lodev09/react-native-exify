@@ -63,13 +63,14 @@ export interface ExifTags {
   LightSource?: number;
   UserComment?: string;
   GainControl?: number;
-  ISOSpeedRatings?: string;
+  ISOSpeedRatings?: number[];
   FocalPlaneResolutionUnit?: number;
   FocalPlaneXResolution?: number;
   YCbCrCoefficients?: number;
   FocalLengthIn35mmFilm?: number;
   LensMake?: string;
   LensModel?: string;
+  BodySerialNumber?: string;
   LensSpecification?: number[];
   ISO?: number;
   FlashpixVersion?: number[];

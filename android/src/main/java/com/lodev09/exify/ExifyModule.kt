@@ -182,7 +182,9 @@ class ExifyModule(
             }
 
             ReadableType.Array -> {
-              exif.setAttribute(tag, tags.getArray(tag).toString())
+              val arr = tags.getArray(tag)!!
+              val values = (0 until arr.size()).joinToString(", ") { arr.getInt(it).toString() }
+              exif.setAttribute(tag, values)
             }
 
             else -> {

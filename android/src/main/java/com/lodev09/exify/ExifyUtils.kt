@@ -18,11 +18,21 @@ object ExifyUtils {
           }
 
           "int" -> {
-            tags.putInt(tag, exif.getAttributeInt(tag, 0))
+            val intVal = exif.getAttributeInt(tag, 0)
+            if (tag == ExifInterface.TAG_ORIENTATION && intVal == 0) continue
+            tags.putInt(tag, intVal)
           }
 
           "double" -> {
             tags.putDouble(tag, exif.getAttributeDouble(tag, 0.0))
+          }
+
+          "int_array" -> {
+            val array = Arguments.createArray()
+            attribute.split(", ").forEach { part ->
+              part.trim().toIntOrNull()?.let { array.pushInt(it) }
+            }
+            if (array.size() > 0) tags.putArray(tag, array)
           }
 
           "array" -> {
